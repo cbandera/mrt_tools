@@ -14,7 +14,7 @@ import mrt_tools.DockerCheck
 
 import click
 
-
+# TODO make this use a local docker container
 @click.group()
 def main():
     """Test code in clean environment"""
