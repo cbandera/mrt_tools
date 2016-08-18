@@ -20,6 +20,9 @@ default_settings = {
         'CACHE_GIT_CREDENTIALS_FOR_HTTPS_REPOS': True,
         'GIT_CACHE_TIMEOUT': 900,  # in seconds
         'STORE_CREDENTIALS_IN': "",
+        'STORE_USERNAME': True,
+        'STORE_PASSWORD': True,
+        'STORE_API_TOKEN': True,
         'USE_SSH': False,
     },
     'Snapshot': {

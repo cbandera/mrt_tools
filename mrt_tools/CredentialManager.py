@@ -6,7 +6,32 @@ import getpass
 import click
 import sys
 
-# TODO add additional setting to save token only (in combination with any Manager)
+"""
+CredentialManager
+
+The CredentialManager is a class to store you gitlab credentials for you, so you don't have to retype them every time they are needed.
+There are several backends which you can choose from. Right now the following are supported:
+- The BaseCredentialManager will store them just for a single session.
+- The DummyCredentialManager will not store them at all
+- The KeyringCredentialManager will store the credential permanently and let's you choose between a file or the
+GnomeKeyring as a backend.
+
+Through the settings, you can choose which credentials to save:
+- Username
+- Password
+- API Token
+"""
+
+
+def store_this(key):
+    if key == "username" and not user_settings['Gitlab']['STORE_USERNAME']:
+        return False
+    if key == "password" and not user_settings['Gitlab']['STORE_PASSWORD']:
+        return False
+    if key == "token" and not user_settings['Gitlab']['STORE_API_TOKEN']:
+        return False
+    return True
+
 
 class BaseCredentialManager(object):
     credentialStorage = {}
@@ -39,6 +64,8 @@ class BaseCredentialManager(object):
         return self.get("token")
 
     def store(self, key, value):
+        if not store_this(key):
+            return
         self.credentialStorage[key] = value
 
     def get(self, key):
@@ -74,6 +101,8 @@ class KeyringCredentialManager(BaseCredentialManager):
 
     def store(self, key, value):
         click.secho("Storing {} in keyring.".format(key), fg="green")
+        if not store_this(key):
+            return
         keyring.set_password(self.SERVICE_NAME, key, value)
 
     def delete(self, key):
@@ -103,7 +132,7 @@ CredentialManagers['DummyCredentialManager'] = (
 try:  # Test whether keyring is available
     import keyring
 
-    for i in range(5): # Sometimes, it just wont work right away, so we just try several times
+    for i in range(5):  # Sometimes, it just wont work right away, so we just try several times
         try:  # Test whether Gnome Keyring is available
             keyring.set_keyring(keyring.backends.Gnome.Keyring())
             CredentialManagers['GnomeCredentialManager'] = (GnomeCredentialManager, "Uses Ubuntu Default Gnome Keyring "
