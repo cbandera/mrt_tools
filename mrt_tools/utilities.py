@@ -356,29 +356,29 @@ def changed_base_yaml():
 
     # Read hashes
     try:
-        base_yaml = urllib2.urlopen(user_settings['Other']['BASE_YAML_URL']).read()
+        base_yaml = urllib2.urlopen(user_settings['Dependencies']['BASE_YAML_URL']).read()
         hasher.update(base_yaml)
         new_hash = hasher.hexdigest()
     except IOError:
         click.secho("Could not read base yaml file at {}. Not testing for changed rosdep db".format(
-            user_settings['Other']['BASE_YAML_URL']), fg="red")
+            user_settings['Dependencies']['BASE_YAML_URL']), fg="red")
         return False
 
     try:
-        with open(user_settings['Other']['BASE_YAML_HASH_FILE'], 'r') as f:
+        with open(user_settings['Dependencies']['BASE_YAML_HASH_FILE'], 'r') as f:
             old_hash = f.read()
     except IOError:
         old_hash = ""
-        if not os.path.exists(os.path.dirname(user_settings['Other']['BASE_YAML_HASH_FILE'])):
-            os.makedirs(os.path.dirname(user_settings['Other']['BASE_YAML_HASH_FILE']))
-        with open(user_settings['Other']['BASE_YAML_HASH_FILE'], 'wb') as f:
+        if not os.path.exists(os.path.dirname(user_settings['Dependencies']['BASE_YAML_HASH_FILE'])):
+            os.makedirs(os.path.dirname(user_settings['Dependencies']['BASE_YAML_HASH_FILE']))
+        with open(user_settings['Dependencies']['BASE_YAML_HASH_FILE'], 'wb') as f:
             f.write("")
 
     # Compare hashes
     if old_hash == new_hash:
         return False
     else:
-        with open(user_settings['Other']['BASE_YAML_HASH_FILE'], 'w') as f:
+        with open(user_settings['Dependencies']['BASE_YAML_HASH_FILE'], 'w') as f:
             f.truncate()
             f.write(new_hash)
         return True
