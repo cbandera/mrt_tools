@@ -1,17 +1,17 @@
 #!/usr/bin/python
 import ConfigParser
+import click
 import os
 
-# TODO use different config dir
-CONFIG_DIR = os.path.expanduser("~/.mrtgitlab")
-CONFIG_FILE = os.path.join(CONFIG_DIR, "mrt.cfg")
 
-# TODO detect first time usage and query all values without defaults
+CONFIG_DIR = os.path.expanduser("~/.mrt_tools")
+CONFIG_FILE = os.path.join(CONFIG_DIR, "mrt_tools.cfg")
+
 # Default settings
 default_settings = {
     'Cache': {
-        'CACHE_FILE': os.path.join(CONFIG_DIR, "repo_cache"),
-        'CACHE_LOCK_FILE': os.path.join(CONFIG_DIR, ".repo_cache_lock"),
+        'CACHE_FILE': os.path.join(CONFIG_DIR, "gitlab_packages"),
+        'CACHE_LOCK_FILE': os.path.join(CONFIG_DIR, ".package_cache_lock"),
         'CACHE_LOCK_DECAY_TIME': 30,  # in seconds
         'CACHED_DEPS_WS': os.path.join(CONFIG_DIR, "deps_cache_ws"),
     },
@@ -86,6 +86,10 @@ def write_settings(settings, config_file=CONFIG_FILE):
     with open(config_file, 'wb') as f:
         config.write(f)
 
+# Test for first time usage
+if not os.path.isfile(CONFIG_FILE):
+    click.echo("Looks like this is the first time you use this tools. Have a look at the settings, by using 'mrt "
+               "maintenance settings' in order to configure these tools")
 
 # Read user settings
 user_settings = read_settings(default_settings, CONFIG_FILE)
