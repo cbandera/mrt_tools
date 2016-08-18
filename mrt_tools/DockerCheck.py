@@ -3,6 +3,10 @@ import os
 import pwd
 import grp
 
+# TODO perform the check on local machine
+# TODO check that docker image exists
+# TODO remove container and start with a fresh one
+# TODO have a look at docker files and create one without MRT stuff
 
 def pkg(package_name):
     _start_docker("mrt_build_check_pkg", [package_name])

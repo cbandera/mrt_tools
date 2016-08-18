@@ -30,7 +30,7 @@ def is_ros_sourced():
 
 def get_script_root():
     """
-    Get the path of this script.
+    Get the path to the install location of this script.
     :return: path
     """
     return os.path.dirname(os.path.realpath(__file__))
@@ -132,7 +132,7 @@ def touch(filename, times=None):
         with open(filename, 'w'):
             os.utime(filename, times)
 
-
+# TODO remove mrt
 def update_apt_and_ros_packages():
     f_null = open(os.devnull, 'w')
     subprocess.call(["sudo", "apt-get", "update", "-o", "Dir::Etc::sourcelist=", "sources.list.d/mrt.list",
@@ -153,6 +153,7 @@ def zip_files(files, archive):
     zf.close()
 
 
+# TODO let users define this function
 def check_naming(pkg_name):
     while re.match("^[a-z][a-z_0-9]+$", pkg_name) is None:
         pkg_name = click.prompt(
@@ -175,7 +176,7 @@ def get_rosdeps():
     output, __ = process.communicate()
     return [line.split(" -> ")[0] for line in output.split("\n") if " -> " in line]
 
-
+# TODO move this package related stuff into own file?
 def create_directories(pkg_name, pkg_type, ros):
     # Check for already existing folder
     if os.path.exists("src/" + pkg_name):
@@ -202,7 +203,7 @@ def create_directories(pkg_name, pkg_type, ros):
         os.makedirs("launch/params")
         touch("launch/params/.gitignore")
 
-
+# TODO really think about how to handle cmake templates
 def create_cmakelists(pkg_name, pkg_type, ros, self_dir):
     # CMakeLists.txt
     # build mask @12|34@
@@ -229,7 +230,7 @@ def create_cmakelists(pkg_name, pkg_type, ros, self_dir):
                     "-e 's/\${CMAKE_PACKAGE_NAME}/" + pkg_name + "/g' " +
                     "CMakeLists.txt", shell=True)
 
-
+# TODO use python templates?
 def create_files(pkg_name, pkg_type, ros):
     # Create files and replace with user info
     user = get_gituserinfo()
@@ -252,7 +253,7 @@ def create_files(pkg_name, pkg_type, ros):
 
     create_cmakelists(pkg_name, pkg_type, ros, self_dir)
 
-
+# TODO remove this function
 def check_and_update_cmakelists(pkg_name, current_version):
     os.chdir(pkg_name)
     with open("CMakeLists.txt") as f:
@@ -345,7 +346,7 @@ def import_repo_names(ctx=None, incomplete=None, cwords=None, cword=None):
     except OSError:
         return []
 
-
+# TODO maybe create a file called AutoDeps or DependencyManagement...
 def changed_base_yaml():
     click.echo("Testing for changes in rosdeps...")
     import hashlib

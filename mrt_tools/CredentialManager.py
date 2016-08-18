@@ -6,6 +6,7 @@ import getpass
 import click
 import sys
 
+# TODO add additional setting to save token only (in combination with any Manager)
 
 class BaseCredentialManager(object):
     credentialStorage = {}

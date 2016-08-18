@@ -293,6 +293,7 @@ class Workspace(object):
             deps.update({d.name for d in self.catkin_pkgs[pkg_name].test_depends})
         return deps
 
+    # TODO have a look at this function
     def resolve_dependencies(self, git=None, default_yes=None):
         # TODO maybe use rosdep2 package directly
         click.echo("Resolving dependencies...")

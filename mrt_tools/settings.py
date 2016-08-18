@@ -2,9 +2,11 @@
 import ConfigParser
 import os
 
+# TODO use different config dir
 CONFIG_DIR = os.path.expanduser("~/.mrtgitlab")
 CONFIG_FILE = os.path.join(CONFIG_DIR, "mrt.cfg")
 
+# TODO detect first time usage and query all values without defaults
 # Default settings
 default_settings = {
     'SSH': {

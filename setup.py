@@ -10,7 +10,7 @@ for root, dirnames, filenames in os.walk('mrt_tools/templates'):
     for filename in filenames:
         data_files.append(os.path.join(root[root.find('templates'):], filename))
 
-
+# TODO Test dependencies
 setup(
     name='mrt',
     version='2.0.7',

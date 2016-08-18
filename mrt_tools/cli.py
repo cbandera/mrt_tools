@@ -11,6 +11,10 @@ if os.getuid() == 0:
         click.secho("Should not be run as root. Please use without sudo.", fg="red")
         sys.exit(0)
 
+# TODO GENERAL
+# TODO test whether we still need a virtualenv
+# TODO Think about documentation -> sphinx? readthedocs?
+
 # Activate virtualenv if found
 venv_activate_file = None
 current_dir = get_python_lib()

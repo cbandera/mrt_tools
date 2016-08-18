@@ -13,6 +13,8 @@ import click
 import sys
 import os
 
+# TODO change class and file into Gitlab
+# TODO move all "GIT" functions from utilities into this file
 
 class Git(object):
     def __init__(self, quiet=False):
@@ -76,12 +78,12 @@ class Git(object):
                     connection_successful = True
                 except JSONDecodeError:
                     connection_successful = False
-
+            # TODO think about the order and login settigns again
             if not connection_successful or not self.token:
                 # Try to connect from extern
                 username, password = cm.credentialManager.get_credentials(quiet=quiet)
                 if self.token:
-                    click.secho("Connection to server was unsuccessful. Trying external access.", fg="yellow")
+                    click.secho("Connection to server was unsuccessful. Trying authenticated access.", fg="yellow")
                     self.server = gitlab.Gitlab(self.host, token=self.token, auth=(username, password))
                 else:
                     # create token, therefor login with username and password
