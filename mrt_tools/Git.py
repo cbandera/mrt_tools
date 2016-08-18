@@ -20,7 +20,7 @@ class Git(object):
     def __init__(self, quiet=False):
         # Host URL
         self.host = user_settings['Gitlab']['HOST_URL']
-        self.use_ssh = user_settings['SSH']['USE_SSH']
+        self.use_ssh = user_settings['Gitlab']['USE_SSH']
         self.token = cm.credentialManager.get_token()
         self.server = None
         self.ssh_key = None

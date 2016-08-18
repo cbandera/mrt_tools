@@ -9,9 +9,6 @@ CONFIG_FILE = os.path.join(CONFIG_DIR, "mrt.cfg")
 # TODO detect first time usage and query all values without defaults
 # Default settings
 default_settings = {
-    'SSH': {
-        'USE_SSH': False,
-    },
     'Cache': {
         'CACHE_FILE': os.path.join(CONFIG_DIR, "repo_cache"),
         'CACHE_LOCK_FILE': os.path.join(CONFIG_DIR, ".repo_cache_lock"),
@@ -22,7 +19,8 @@ default_settings = {
         'HOST_URL': "https://gitlab.mrt.uni-karlsruhe.de",
         'CACHE_GIT_CREDENTIALS_FOR_HTTPS_REPOS': True,
         'GIT_CACHE_TIMEOUT': 900,  # in seconds
-        'STORE_CREDENTIALS_IN': ""
+        'STORE_CREDENTIALS_IN': "",
+        'USE_SSH': False,
     },
     'Snapshot': {
         'FILE_ENDING': ".snapshot",
