@@ -1,5 +1,5 @@
 from mrt_tools.RosbagMetadataHandler import RosbagMetadataHandler
-from mrt_tools.utilities import get_help_text
+from mrt_tools.utilities import get_help_text, echo
 import subprocess
 import time
 import click
@@ -29,7 +29,7 @@ def main():
 @click.argument('args', nargs=-1, type=click.UNPROCESSED, autocompletion=topic_list)
 def record(output_name, prefix, reuse, args):
     if not [arg for arg in args if not arg.startswith("-")] and "-a" not in args:
-        click.echo("You must specify a topic name or else use the '-a' option.")
+        echo("You must specify a topic name or else use the '-a' option.")
         return
 
     # Determine file name
@@ -50,7 +50,7 @@ def record(output_name, prefix, reuse, args):
     try:
         process.wait()
     except KeyboardInterrupt:
-        click.echo("")
+        echo("")
         process.terminate()
         process.communicate()
 
@@ -63,7 +63,7 @@ def record(output_name, prefix, reuse, args):
 def annotate(bagfile, clean):
     """Add metadata to an existing rosbag"""
     if not os.path.isfile(bagfile):
-        click.echo("No such file: {}".format(os.path.abspath(bagfile)))
+        echo("No such file: {}".format(os.path.abspath(bagfile)))
         return
     rmh = RosbagMetadataHandler()
     rmh.collect_metadata(bagfile, clean_start=clean)
@@ -78,13 +78,13 @@ def info(args):
     bags = [arg for arg in args if not arg.startswith("-")]
     for bag in bags:
         if os.path.isdir(bag):
-            click.echo("{} is not a rosbag".format(bag))
+            echo("{} is not a rosbag".format(bag))
             continue
-        click.echo("============ INFO for file {} ============".format(os.path.basename(bag)))
+        echo("============ INFO for file {} ============".format(os.path.basename(bag)))
         rmh = RosbagMetadataHandler()
         rmh.data = rmh.load_from_bag(bag)
         if rmh.data is not None:
-            click.echo(rmh)
-            click.echo("Rosbag")
-            click.echo("=" * len("Rosbag"))
+            echo(rmh)
+            echo("Rosbag")
+            echo("=" * len("Rosbag"))
             subprocess.call(["rosbag", "info"] + list(options) + [bag])

@@ -27,8 +27,7 @@ def init(ws, ws_name):
             os.makedirs(ws_name)
             os.chdir(ws_name)
         except:
-            click.secho("Can not initialize new ws, directory exists already.", fg="red")
-            sys.exit(1)
+            eprint("Can not initialize new ws, directory exists already.")
     ws.create()
 
 
@@ -93,7 +92,7 @@ def tidy(ws):
                     not_done = True
                     ws.test_for_changes(pkg_name)
                     ws.cd_src()
-                    click.echo("Removing {0}".format(pkg_name))
+                    echo("Removing {0}".format(pkg_name))
                     shutil.rmtree(pkg_name)
                     ws.recreate_index()
                     ws.cd_root()

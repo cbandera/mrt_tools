@@ -27,7 +27,7 @@ def update_url_in_package_xml():
             contents = f.readlines()
         click.clear()
         for index, item in enumerate(contents):
-            click.echo("{0}: {1}".format(index, item[:-1]))
+            echo("{0}: {1}".format(index, item[:-1]))
         linenumber = click.prompt("\n\nPlease specify the line to insert the url in", type=click.INT)
         contents.insert(linenumber, '  <url type="repository">{0}</url>\n'.format(url))
         contents = "".join(contents)
@@ -68,29 +68,28 @@ def update_url_in_package_xml():
         # Testing all cases:
         if xml_url is not None and git_url is not None:
             if xml_url != git_url:
-                click.secho("WARNING in {0}: URL declared in src/{1}/package.xml, differs from the git repo url for {"
-                            "0}!".format(pkg_name.upper(), pkg_name),
-                            fg="red")
-                click.echo("PackageXML: {0}".format(xml_url))
-                click.echo("Git repo  : {0}".format(git_url))
+                wprint("WARNING in {0}: URL declared in src/{1}/package.xml, differs from the git repo url for {"
+                       "0}!".format(pkg_name.upper(), pkg_name))
+                echo("PackageXML: {0}".format(xml_url))
+                echo("Git repo  : {0}".format(git_url))
                 if click.confirm("Replace the url in package.xml with the correct one?"):
                     subprocess.call("sed -i -e '/  <url/d' {0}".format(filename), shell=True)
                     insert_url(filename, git_url)
         if xml_url is not None and git_url is None:
-            click.secho("WARNING in {0}: URL declared in package.xml, but {1} does not seem to be a remote "
-                        "repository!".format(pkg_name.upper(), pkg_name), fg="yellow")
+            wprint(
+                "WARNING in {0}: URL declared in package.xml, but {1} does not seem to be a remote repository!".format(
+                    pkg_name.upper(), pkg_name))
             if click.confirm("Remove the url in package.xml?"):
-                click.secho("Fixing...", fg="green")
+                sprint("Fixing...")
                 subprocess.call("sed -i -e '/  <url/d' {0}".format(filename), shell=True)
         if xml_url is None and git_url is not None:
-            click.secho("WARNING in {0}: No URL (or multiple) defined in package.xml!".format(pkg_name.upper()),
-                        fg="yellow")
+            wprint("WARNING in {0}: No URL (or multiple) defined in package.xml!".format(pkg_name.upper()))
             if click.confirm("Insert (Replace) the url in package.xml with the correct one?"):
                 subprocess.call("sed -i -e '/  <url/d' {0}".format(filename), shell=True)
                 insert_url(filename, git_url)
         if xml_url is None and git_url is None:
-            click.secho("INFO in {0}: Does not seem to be a git repository. You should use Version Control for your "
-                        "code!".format(pkg_name.upper()), fg="cyan")
+            echo("INFO in {0}: Does not seem to be a git repository. You should use Version Control for your "
+                        "code!".format(pkg_name.upper()))
 
         if git_url is not None:
             ws.add(pkg_name, git_url, update=False)
@@ -115,7 +114,7 @@ def update_cmakelists(package, this):
     current_version = None
 
     # download newest version:
-    click.echo("Downloading newest template from gitlab")
+    echo("Downloading newest template from gitlab")
     git = Gitlab()
     mrt_build_repo = git.find_repo("mrt_build")
     new_cmakelists = git.server.getrawfile(mrt_build_repo['id'], "master", 'mrt_tools/templates/CMakeLists.txt')
@@ -124,14 +123,12 @@ def update_cmakelists(package, this):
             current_version = line[:-1]
             break
     if not current_version:
-        click.secho("current pkg_version could not be found.", fg='red')
-        sys.exit(1)
+        eprint("current pkg_version could not be found.")
 
     if this:
         package = os.path.basename(ws.org_dir)
         if package not in catkin_packages:
-            click.secho("{0} does not seem to be a catkin package.".format(package), fg="red")
-            sys.exit(1)
+            eprint("{0} does not seem to be a catkin package.".format(package))
     if not package:
         for pkg_name in catkin_packages:
             ws.cd_src()
@@ -153,11 +150,9 @@ def rename_pkg(new_name):
     package = os.path.basename(ws.org_dir)
     catkin_packages = ws.get_catkin_package_names()
     if package not in catkin_packages:
-        click.secho("{0} does not seem to be a catkin package.".format(package), fg="red")
-        sys.exit(1)
+        eprint("{0} does not seem to be a catkin package.".format(package))
     if new_name in catkin_packages:
-        click.secho("{0} does already exist in your workspace.".format(new_name), fg="red")
-        sys.exit(1)
+        eprint("{0} does already exist in your workspace.".format(new_name))
 
     # Test files
     for dirName, subdirList, fileList in os.walk(ws.src + "/" + package):
@@ -179,48 +174,47 @@ def rename_pkg(new_name):
 
     # Test for git repo
     if not os.path.exists(ws.src + "/" + package + "/.git"):
-        click.echo("Renamed package " + package + " to " + new_name)
+        echo("Renamed package " + package + " to " + new_name)
         return
 
     os.chdir(ws.src + "/" + package)
-    click.echo("The following files in this package have been changed:")
+    echo("The following files in this package have been changed:")
     subprocess.call("git status -s", shell=True)
-    click.echo("")
-    click.echo("Next steps:")
-    click.echo("\t-Review changes")
-    click.echo("\t-Commit changes")
+    echo("")
+    echo("Next steps:")
+    echo("\t-Review changes")
+    echo("\t-Commit changes")
 
-    click.echo("")
+    echo("")
     while ws.test_for_changes(package, quiet=True):
         click.prompt("Continue, when changes are commited and pushed...")
 
-    click.echo("")
+    echo("")
     click.confirm("Do you want to move the gitlab project now?", abort=True)
-    click.echo("Moving gitlab project...")
+    echo("Moving gitlab project...")
     git = Gitlab()
     project = git.find_repo(package)
     namespace = project["namespace"]["name"]
     project_id = project["id"]
     if not git.server.editproject(project_id, name=new_name, path=new_name):
-        click.secho("There was a problem, moving the project. Aborting!", fg="red")
-        sys.exit(1)
+        eprint("There was a problem, moving the project. Aborting!")
 
-    click.echo("Updating git remote...")
+    echo("Updating git remote...")
     os.chdir(ws.src + "/" + package)
     project = git.find_repo(new_name, namespace)
     new_url = project[git.get_url_string()]
     subprocess.call("git remote set-url origin " + new_url + " >/dev/null 2>&1", shell=True)
 
-    click.echo("Updating local ws...")
+    echo("Updating local ws...")
     ws.cd_src()
     shutil.move(package, new_name)
     os.chdir(new_name)
     os.remove(ws.src + "/.rosinstall")
     ws.recreate_index(write=True)
 
-    click.echo("")
-    click.echo("Next steps:")
-    click.echo("\t-Adjust includes in other packages")
+    echo("")
+    echo("Next steps:")
+    echo("\t-Adjust includes in other packages")
 
 
 @main.command(short_help="Reinitialise the workspace index",
@@ -230,9 +224,9 @@ def update_rosinstall():
     """Reinitialise the workspace index"""
     ws = Workspace()
     ws.cd_src()
-    click.secho("Removing wstool database src/.rosinstall", fg="yellow")
+    wprint("Removing wstool database src/.rosinstall")
     os.remove(".rosinstall")
-    click.echo("Initializing wstool...")
+    echo("Initializing wstool...")
     ws.recreate_index(write=True)
 
 
@@ -256,12 +250,12 @@ def update_repo_cache(quiet):
         if not repo_dicts:
             raise Exception
         if not quiet:
-            click.echo("Update was successful")
+            echo("Update was successful")
     except:
         # In case the connection didn't succeed, the file is going to be flushed -> we don't seem to have a
         # connection anyway and don't want old data.
         if not quiet:
-            click.echo("There was an error during update.")
+            echo("There was an error during update.")
         error_occurred = True
         repo_dicts = []
         # Remove lock file, so that it will soon be tried again.
@@ -323,14 +317,14 @@ def update_cached_deps():
     git = Gitlab()
 
     if os.path.exists(user_settings['Cache']['CACHED_DEPS_WS']):
-        click.echo("Removing existing files in workspace")
+        echo("Removing existing files in workspace")
         shutil.rmtree(user_settings['Cache']['CACHED_DEPS_WS'])
     os.makedirs(user_settings['Cache']['CACHED_DEPS_WS'])
 
-    click.echo("Retrieving repo list")
+    echo("Retrieving repo list")
     repo_list = list(git.server.getall(git.server.getprojects, per_page=100))
 
-    click.echo("Downloading package.xml files")
+    echo("Downloading package.xml files")
     skipped_repos = []
     with click.progressbar(repo_list) as repos:
         branches = []
@@ -362,9 +356,9 @@ def update_cached_deps():
                     f.write(file_contents)
 
     skipped_repos = set(skipped_repos)
-    click.echo("Skipped the following repos:")
+    echo("Skipped the following repos:")
     for repo in skipped_repos:
-        click.echo("- {}".format(repo))
+        echo("- {}".format(repo))
 
 
 @main.group()
@@ -388,10 +382,10 @@ def delete_credentials():
     # Remove SSH Key
     sshkeys = Gitlab.get_local_ssh_keys()
     if sshkeys:
-        click.secho("You have an ssh key stored on this machine. If you want to remove ALL of your userdata, "
-                    "please delete it manually.", fg="yellow")
+        wprint("You have an ssh key stored on this machine. If you want to remove ALL of your userdata, "
+               "please delete it manually.")
         for nr, key in enumerate(sshkeys):
-            click.echo("\t" + str(nr + 1) + ")\t" + key.path)
+            echo("\t" + str(nr + 1) + ")\t" + key.path)
 
 
 @credentials.command(short_help="Remove all stored credentials from this machine.")
@@ -427,14 +421,14 @@ def save(username, password):
 def show():
     username = credentialManager.get_username(quiet=True)
     password = credentialManager.get_password(username, quiet=True) and "******"
-    click.echo("")
-    click.echo("Gitlab credentials")
-    click.echo("==================")
-    click.echo("(Current setting: '{}')".format(user_settings['Gitlab']['STORE_CREDENTIALS_IN']))
-    click.echo("Username: {}".format(username))
-    click.echo("Password: {}".format(password))
-    click.echo("Token   : {}".format(credentialManager.get_token()))
-    click.echo("")
+    echo("")
+    echo("Gitlab credentials")
+    echo("==================")
+    echo("(Current setting: '{}')".format(user_settings['Gitlab']['STORE_CREDENTIALS_IN']))
+    echo("Username: {}".format(username))
+    echo("Password: {}".format(password))
+    echo("Token   : {}".format(credentialManager.get_token()))
+    echo("")
 
     # Read out username and email
     (name, name_err) = subprocess.Popen("git config --get user.name", shell=True,
@@ -446,15 +440,15 @@ def show():
         name = name[:-1]
     if email:
         email = email[:-1]
-    click.echo("Git credentials")
-    click.echo("==================")
-    click.echo("user.name    : {}".format(name))
-    click.echo("user.email   : {}".format(email))
+    echo("Git credentials")
+    echo("==================")
+    echo("user.name    : {}".format(name))
+    echo("user.email   : {}".format(email))
     if os.path.exists(os.path.expanduser("~/.git-credential-cache/socket")):
-        click.echo("cached creds.: {}".format("Yes"))
+        echo("cached creds.: {}".format("Yes"))
     else:
-        click.echo("cached creds.: {}".format("No"))
-    click.echo("")
+        echo("cached creds.: {}".format("No"))
+    echo("")
 
 
 @credentials.command(short_help="Show all stored credentials on this machine.")

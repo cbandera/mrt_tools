@@ -1,5 +1,5 @@
 from mrt_tools.settings import user_settings, write_settings
-from mrt_tools.utilities import get_user_choice
+from mrt_tools.utilities import get_user_choice, eprint, wprint, sprint, echo
 from collections import OrderedDict
 import subprocess
 import getpass
@@ -100,7 +100,7 @@ class KeyringCredentialManager(BaseCredentialManager):
         return keyring.get_password(self.SERVICE_NAME, key)
 
     def store(self, key, value):
-        click.secho("Storing {} in keyring.".format(key), fg="green")
+        sprint("Storing {} in keyring.".format(key))
         if not store_this(key):
             return
         keyring.set_password(self.SERVICE_NAME, key, value)
@@ -108,7 +108,7 @@ class KeyringCredentialManager(BaseCredentialManager):
     def delete(self, key):
         try:
             keyring.delete_password(self.SERVICE_NAME, key)
-            click.secho("Removed {} from keyring".format(key), fg="green")
+            sprint("Removed {} from keyring".format(key))
         except keyring.errors.PasswordDeleteError:
             pass
 
@@ -155,15 +155,15 @@ if user_settings['Gitlab']['STORE_CREDENTIALS_IN'] not in CredentialManagers.key
         # You're NOT running in a real terminal, create DummyCredentialManager to avoid being prompted
         user_settings['Gitlab']['STORE_CREDENTIALS_IN'] = "DummyCredentialManager"
     else:
-        click.echo("")
-        click.secho("Please choose one of the available backends for saving your credentials. \n"
-                    "These settings can be changed with 'mrt maintenance settings')", fg='yellow')
-        click.echo("")
+        echo("")
+        wprint("Please choose one of the available backends for saving your credentials. \n"
+                    "These settings can be changed with 'mrt maintenance settings')")
+        echo("")
         user_choice, _ = get_user_choice(['{:25s}-> {}'.format(manager, description[1]) for manager,
                                                                                             description in
                                           CredentialManagers.items()], default=0,
                                          prompt="Where do you want to save your credentials?")
-        click.echo("")
+        echo("")
         user_settings['Gitlab']['STORE_CREDENTIALS_IN'] = CredentialManagers.keys()[user_choice]
         write_settings(user_settings)
 

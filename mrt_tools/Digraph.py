@@ -1,5 +1,4 @@
 import subprocess
-import click
 import pydot
 import os
 
@@ -83,4 +82,4 @@ class Digraph(object):
         self.graph.write_png(filename)
         if show:
             subprocess.call(["xdg-open", filename])
-        click.echo("Image written to: " + os.getcwd() + "/" + filename)
+        echo("Image written to: " + os.getcwd() + "/" + filename)

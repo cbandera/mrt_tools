@@ -1,9 +1,11 @@
 from distutils.sysconfig import get_python_lib
 from mrt_tools.settings import user_settings
+from mrt_tools.utilities import eprint
 import mrt_tools.commands
 import os
 import click
 import sys
+
 
 """
 This is the landing point for the cli tool.
@@ -25,8 +27,7 @@ added as subcommands.
 # Test for sudo
 if os.getuid() == 0:
     if not user_settings['Other']['ALLOW_ROOT']:
-        click.secho("Should not be run as root. Please use without sudo.", fg="red")
-        sys.exit(0)
+        eprint("Should not be run as root. Please use without sudo.")
 
 # Activate virtualenv if found
 venv_activate_file = None
@@ -61,8 +62,7 @@ class MyCLI(click.MultiCommand):
                 code = compile(f.read(), fn, 'exec')
                 eval(code, ns, ns)
         except IOError:
-            click.secho("No such subcommand: '{0}'".format(name), fg="red")
-            sys.exit(1)
+            eprint("No such subcommand: '{0}'".format(name))
         return ns['main']
 
 

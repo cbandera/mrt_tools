@@ -1,8 +1,8 @@
-import urllib2
-
 from mrt_tools.settings import user_settings
+from mrt_tools.Git import get_gituserinfo
 from builtins import str
 import subprocess
+import urllib2
 import zipfile
 import shutil
 import fnmatch
@@ -11,6 +11,43 @@ import sys
 import os
 import re
 import xml.etree.ElementTree as ET
+
+
+def eprint(message):
+    """
+    Prints a red error message  to consoleend exits with error.
+    :param message:
+    :return: None
+    """
+    click.secho(message, fg="red")
+    sys.exit(1)
+
+
+def wprint(message):
+    """
+    Prints a yellow warning message to console
+    :param message:
+    :return: None
+    """
+    click.secho(message, fg="yellow")
+
+
+def sprint(message):
+    """
+    Prints a green success message to console
+    :param message:
+    :return: None
+    """
+    click.secho(message, fg="green")
+
+
+def echo(message):
+    """
+    Prints a message to console
+    :param message:
+    :return: None
+    """
+    echo(message)
 
 
 def convert_to_snake_case(name):
@@ -73,7 +110,7 @@ def get_user_choice(items, extra=None, prompt="Please choose a number", default=
 
     # Print choices
     for key, value in choices.items():
-        click.echo("(" + str(key) + ") " + str(value))
+        echo("(" + str(key) + ") " + str(value))
 
     # Get choice
     while True:
@@ -122,11 +159,8 @@ def get_rosdeps():
 def create_directories(pkg_name, pkg_type, ros):
     # Check for already existing folder
     if os.path.exists("src/" + pkg_name):
-        click.secho(
-            "ERROR: The folder with the name ./src/" + pkg_name +
-            " exists already. Please move it or choose a different package name.",
-            fg="red")
-        sys.exit(1)
+        eprint("ERROR: The folder with the name ./src/" + pkg_name +
+               " exists already. Please move it or choose a different package name.")
 
     # Create folders
     os.makedirs("src/" + pkg_name)
@@ -204,7 +238,7 @@ def check_and_update_cmakelists(pkg_name, current_version):
     with open("CMakeLists.txt") as f:
         pkg_version = f.readline()[:-1]
     if pkg_version != current_version:
-        click.echo("\n{0}: Package versions not matching: {1}<->{2}".format(pkg_name.upper(), pkg_version,
+        echo("\n{0}: Package versions not matching: {1}<->{2}".format(pkg_name.upper(), pkg_version,
                                                                             current_version))
         if click.confirm("Update CMakeLists?"):
             ros = click.confirm("ROS package?")
@@ -294,7 +328,7 @@ def import_repo_names(ctx=None, incomplete=None, cwords=None, cword=None):
 
 # TODO maybe create a file called AutoDeps or DependencyManagement...
 def changed_base_yaml():
-    click.echo("Testing for changes in rosdeps...")
+    echo("Testing for changes in rosdeps...")
     import hashlib
     hasher = hashlib.md5()
 
@@ -304,8 +338,8 @@ def changed_base_yaml():
         hasher.update(base_yaml)
         new_hash = hasher.hexdigest()
     except IOError:
-        click.secho("Could not read base yaml file at {}. Not testing for changed rosdep db".format(
-            user_settings['Dependencies']['BASE_YAML_URL']), fg="red")
+        wprint("Could not read base yaml file at {}. Not testing for changed rosdep db".format(
+            user_settings['Dependencies']['BASE_YAML_URL']))
         return False
 
     try:

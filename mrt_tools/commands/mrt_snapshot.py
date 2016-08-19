@@ -42,7 +42,7 @@ def create(name):
     zip_files(files, filename)
     os.remove(".rosinstall")
     os.remove(user_settings['Snapshot']['VERSION_FILE'])
-    click.secho("Wrote snapshot to " + filename, fg="green")
+    sprint("Wrote snapshot to " + filename)
 
 
 @main.command(short_help="Restore a catkin workspace from a snapshot.",
@@ -64,9 +64,8 @@ def restore(name):
         # file_list = [f.filename for f in zf.filelist]
         version = zf.read(user_settings['Snapshot']['VERSION_FILE'])
     except IOError:
-        click.echo(os.getcwd())
-        click.secho("Can't find file: '" + name + user_settings['Snapshot']['FILE_ENDING'] + "'", fg="red")
-        sys.exit()
+        echo(os.getcwd())
+        eprint("Can't find file: '" + name + user_settings['Snapshot']['FILE_ENDING'] + "'")
 
     if version == "0.1.0":
         # Create workspace folder
@@ -76,24 +75,23 @@ def restore(name):
             ws = Workspace(quiet=True)
             ws.create()
         except OSError:
-            click.secho("Directory {0} exists already".format(workspace), fg="red")
             os.chdir(org_dir)
-            sys.exit(1)
+            eprint("Directory {0} exists already".format(workspace))
 
         # Extract archive
         zf.extractall(path=workspace)
         os.remove(os.path.join(workspace, user_settings['Snapshot']['VERSION_FILE']))
 
         # Clone packages
-        click.secho("Cloning packages", fg="green")
+        sprint("Cloning packages")
         ws.load()
         ws.update()
         ws.resolve_dependencies()
 
         # Build workspace
-        click.secho("Building workspace", fg="green")
+        sprint("Building workspace")
         subprocess.call(["catkin", "clean", "-a"])
         subprocess.call(["catkin", "build"])
 
     else:
-        click.secho("ERROR: Snapshot version not known.", fg="red")
+        eprint("ERROR: Snapshot version not known.")

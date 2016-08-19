@@ -21,8 +21,7 @@ def figure_out_pkg_name(ws, pkg_name, this):
     if this:
         pkg_name = os.path.basename(ws.org_dir)
     if pkg_name not in ws.get_catkin_package_names():
-        click.secho("{0} does not seem to be a catkin package.".format(pkg_name), fg="red")
-        sys.exit(1)
+        eprint("{0} does not seem to be a catkin package.".format(pkg_name))
     return pkg_name
 
 
@@ -56,7 +55,7 @@ def add(ws, pkg_names):
 
         # Test for package
         if ws.find(pkg_name):
-            click.echo("Package {0} already present in workspace config. Run 'mrt wstool update'.".format(pkg_name))
+            echo("Package {0} already present in workspace config. Run 'mrt wstool update'.".format(pkg_name))
             continue
 
         # Add package to workspace
@@ -79,11 +78,11 @@ def remove(ws, pkg_names):
     pkg_list = ws.get_catkin_package_names()
     for pkg_name in pkg_names:
         if pkg_name not in pkg_list:
-            click.echo("Package {} does not exist.".format(pkg_name))
+            echo("Package {} does not exist.".format(pkg_name))
             continue
         ws.test_for_changes(pkg_name)
         ws.cd_src()
-        click.echo("Removing {0}".format(pkg_name))
+        echo("Removing {0}".format(pkg_name))
         shutil.rmtree(pkg_name)
     ws.recreate_index()
     ws.cd_root()
@@ -116,21 +115,20 @@ def create(ws, pkg_name, pkg_type, ros, create_git_repo):
         pkg_name += "_tool"
 
     if pkg_name in get_rosdeps():
-        click.secho("This name collides with a rosdep dependency. Please choose a different one.", fg="red")
-        sys.exit(1)
+        eprint("This name collides with a rosdep dependency. Please choose a different one.")
 
-    click.echo("Creating package with name.... " + pkg_name)
-    click.echo("     --> Package type.... " + pkg_type)
+    echo("Creating package with name.... " + pkg_name)
+    echo("     --> Package type.... " + pkg_type)
     if ros:
-        click.echo("     --> Create ROS Package.... YES")
+        echo("     --> Create ROS Package.... YES")
     else:
-        click.echo("     --> Create ROS Package.... NO")
+        echo("     --> Create ROS Package.... NO")
     if create_git_repo:
-        click.echo("     --> Create  gitlab repository.... YES")
+        echo("     --> Create  gitlab repository.... YES")
     else:
-        click.echo("     --> Create  gitlab repository.... NO")
+        echo("     --> Create  gitlab repository.... NO")
     user = get_gituserinfo()
-    click.echo("     --> Package Maintainer.... " + user['name'] + " <" + user['email'] + ">")
+    echo("     --> Package Maintainer.... " + user['name'] + " <" + user['email'] + ">")
 
     create_directories(pkg_name, pkg_type, ros)
     create_files(pkg_name, pkg_type, ros)
@@ -181,7 +179,7 @@ def draw(ws, pkg_name, this, repos_only):
     else:
         if click.confirm("Create dependency graph for every package?"):
             for pkg_name in ws.get_catkin_package_names():
-                click.echo("Creating graph for {}...".format(pkg_name))
+                echo("Creating graph for {}...".format(pkg_name))
                 deps = ws.get_dependencies(pkg_name, deep=True)
                 graph = Digraph(deps, repos_only)
                 graph.plot(pkg_name, show=False)
@@ -218,18 +216,18 @@ def show(ws, pkg_name, this):
 
     sort(these_deps)
 
-    click.echo("")
-    click.echo("Dependencies for {}".format(pkg_name))
-    click.echo("")
-    click.echo("Gitlab dependencies")
-    click.echo("===================")
+    echo("")
+    echo("Dependencies for {}".format(pkg_name))
+    echo("")
+    echo("Gitlab dependencies")
+    echo("===================")
     for dep in git_deps:
-        click.echo(dep)
-    click.echo("")
-    click.echo("Apt-get dependencies")
-    click.echo("====================")
+        echo(dep)
+    echo("")
+    echo("Apt-get dependencies")
+    echo("====================")
     for dep in apt_deps:
-        click.echo(dep)
+        echo(dep)
 
 
 @deps.command(short_help="Lookup reverse dependencies.",
@@ -241,10 +239,10 @@ def show(ws, pkg_name, this):
 @click.pass_obj
 def rlookup(ws, pkg_name, this, update):
     if update or not os.path.exists(user_settings['Cache']['CACHED_DEPS_WS']):
-        click.echo("Updating repo cache...")
+        echo("Updating repo cache...")
         process = subprocess.Popen(['mrt maintenance update_cached_deps'], shell=True)
         process.wait()  # Wait for process to finish and set returncode
-        # print(process.returncode)
+        # echo(process.returncode)
 
     pkg_name = figure_out_pkg_name(ws, pkg_name, this)
 
@@ -276,12 +274,12 @@ def rlookup(ws, pkg_name, this, update):
                         typ = match.string[match.start() + 2:match.end() - 1]
                         rdeps = insert_into_dict(rdeps, [namespace, repo, branch, typ])
 
-    click.echo("I found the following packages relying on {}:\n".format(pkg_name))
+    echo("I found the following packages relying on {}:\n".format(pkg_name))
     for namespace, d_repo in rdeps.iteritems():
         for repo, d_branches in d_repo.iteritems():
-            click.echo("{}/{}:".format(namespace, repo))
+            echo("{}/{}:".format(namespace, repo))
             for branch, typ in d_branches.iteritems():
-                click.echo("\t- On branch '{}': {}".format(branch, typ))
+                echo("\t- On branch '{}': {}".format(branch, typ))
 
 
 @main.command(short_help="Create a new ROS executable in this package.",
@@ -296,10 +294,10 @@ def create_executable(ws, node_name, tf, diagnostics):
     # Get package name
     pkg_name = figure_out_pkg_name(ws, "", this=True)
     if not "_ros_tool" in pkg_name and not "_tool_ros" in pkg_name:
-        click.echo("{} does not seem to be a ROS executable package.".format(pkg_name))
+        echo("{} does not seem to be a ROS executable package.".format(pkg_name))
         sys.exit(1)
     if not os.path.exists(os.path.join(ws.src, pkg_name, ".git")):
-        click.echo("\nSpecified package does not seem to be a git repo. I don't dare touching any files!")
+        echo("\nSpecified package does not seem to be a git repo. I don't dare touching any files!")
         sys.exit(1)
     # ...and test for changes
     ws.test_for_changes(pkg_name)
@@ -307,15 +305,13 @@ def create_executable(ws, node_name, tf, diagnostics):
     # Get name
     class_name = convert_to_camel_case(node_name)
     file_name = convert_to_snake_case(node_name)
-    print
-    print("Using file prefix: {}".format(file_name))
-    print("Using class name: {}".format(class_name))
-    print
+    echo
+    echo("Using file prefix: {}".format(file_name))
+    echo("Using class name: {}".format(class_name))
+    echo
     if file_name.endswith("_node"):
-        click.secho(
-            "Node name should not end with 'node', because it can be run as a nodelet aswell: {}.".format(file_name),
-            fg="red")
-        sys.exit()
+        eprint("Node name should not end with 'node', because it can be run as a nodelet aswell: {}.".format(
+            file_name))
 
     # CREATE FILES
     def copy_template_file(template_file, rel_target_path, append=False):
@@ -327,15 +323,14 @@ def create_executable(ws, node_name, tf, diagnostics):
 
         if os.path.exists(target_path):
             if append:
-                print("Appending to file {}".format(rel_target_path))
+                echo("Appending to file {}".format(rel_target_path))
                 with open(target_path, 'a') as f_out:
                     with open(source_path, 'r') as f_in:
                         f_out.write(f_in.read())
             else:
-                click.secho("Target file '{}' exists already.".format(target_path))
-                sys.exit(1)
+                eprint("Target file '{}' exists already.".format(target_path))
         else:
-            print("Creating file {}".format(rel_target_path))
+            echo("Creating file {}".format(rel_target_path))
             shutil.copyfile(source_path, target_path)
 
         # Replace Strings with new names

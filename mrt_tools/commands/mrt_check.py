@@ -1,5 +1,5 @@
 from mrt_tools.Workspace import Workspace
-
+from mrt_tools.utilities import echo
 import paramiko
 import getpass
 import os
@@ -15,6 +15,8 @@ import mrt_tools.DockerCheck
 import click
 
 # TODO make this use a local docker container
+
+
 @click.group()
 def main():
     """Test code in clean environment"""
@@ -108,7 +110,7 @@ def pkg(pkg_name, local):
 
 def _connect():
     # connect to server per ssh
-    print("Connect to mrtknecht")
+    echo("Connect to mrtknecht")
     ssh = paramiko.client.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:

@@ -13,14 +13,14 @@ import time
 # Autocompletion
 try:
     tmp_ws = Workspace(quiet=True)
-    suggestions = tmp_ws.get_catkin_package_names()
-    repo_list = import_repo_names()
+    local_pkg_names = tmp_ws.get_catkin_package_names()
+    remote_pkg_names = import_repo_names()
     os.chdir(tmp_ws.org_dir)
 except:
-    suggestions = []
-    repo_list = []
+    local_pkg_names = []
+    remote_pkg_names = []
 
-self_dir = get_script_root()
+script_root = get_script_root()
 
 
 ########################################################################################################################
@@ -37,7 +37,7 @@ def main():
 
 
 @main.command(help="Generate the documentation of a workspace or package.")
-@click.argument("pkg_name", type=click.STRING, required=False, autocompletion=suggestions)
+@click.argument("pkg_name", type=click.STRING, required=False, autocompletion=local_pkg_names)
 @click.option("--this", is_flag=True, help="Build the package containing the current working directory.")
 @click.option("--no-deps", is_flag=True, help="Only build specified packages, not their dependencies.")
 @click.option("-v", "--verbose", is_flag=True, help="Print the info output of the doc generation")
@@ -55,14 +55,12 @@ def build(pkg_name, this, no_deps, verbose, workspace_docs):
         # build only the specified packge
         if pkg_name:
             if pkg_name not in pkg_list:
-                click.secho("Package not found, can't build documentation", fg="red")
-                sys.exit(1)
+                eprint("Package not found, can't build documentation")
         # build only this packge
         elif this:
             pkg_name = os.path.basename(ws.org_dir)
             if pkg_name not in pkg_list:
-                click.secho("{0} does not seem to be a catkin package.".format(pkg_name), fg="red")
-                sys.exit(1)
+                eprint("{0} does not seem to be a catkin package.".format(pkg_name))
 
         # clear doc build package list and set to specified one
         pkg_list = {pkg_name: pkg_list[pkg_name]}
@@ -78,7 +76,7 @@ def build(pkg_name, this, no_deps, verbose, workspace_docs):
 
     # output build summary
     end = time.time()
-    click.secho("[doc build] Found '{}' packages in {:.1f} seconds.".format(len(pkg_list), end - start))
+    echo("[doc build] Found '{}' packages in {:.1f} seconds.".format(len(pkg_list), end - start))
 
     # build packages
     for pkg, _ in pkg_list:
@@ -88,7 +86,7 @@ def build(pkg_name, this, no_deps, verbose, workspace_docs):
 
     # build workspace docs
     if workspace_docs:
-        click.echo("[doc build] Build workspace documentation")
+        echo("[doc build] Build workspace documentation")
         output_start_status_("workspace_doc")
         build_workspace_doc_(ws)
         output_finished_states_("workspace_doc")
@@ -96,7 +94,7 @@ def build(pkg_name, this, no_deps, verbose, workspace_docs):
 
 @main.command(short_help="Shows the documentation of a package.",
               help="Shows the documentation of a package. If the documentation is not found, it will be generated.")
-@click.argument("pkg_name", type=click.STRING, required=False, autocompletion=suggestions)
+@click.argument("pkg_name", type=click.STRING, required=False, autocompletion=local_pkg_names)
 def show(pkg_name):
     if pkg_name:
         index_file = get_html_index_file_path_(pkg_name)
@@ -115,7 +113,7 @@ def show(pkg_name):
 
 
 @main.command(help="Removes the documentation build folder of a workspace or package.")
-@click.argument("pkg_name", type=click.STRING, required=False, autocompletion=suggestions)
+@click.argument("pkg_name", type=click.STRING, required=False, autocompletion=local_pkg_names)
 def clean(pkg_name):
     if pkg_name:
         pkg_list = [pkg_name]
@@ -192,7 +190,7 @@ def build_(ws, pkg_name, verbose=None):
         with open(warn_logfile_name, "r") as f:
             warn_log = f.read().rstrip("\n")
             if len(warn_log) > 0:
-                click.secho(warn_log, fg="yellow")
+                wprint(warn_log)
     finally:
         if os.path.isfile(warn_logfile_name):
             os.remove(warn_logfile_name)
@@ -328,8 +326,8 @@ def get_workspace_doc_folder_(ws):
 
 
 def check_paths_(pkg_name):
-    if pkg_name not in suggestions:
-        click.echo("Package '{}' does not exist inside this workspace.".format(pkg_name))
+    if pkg_name not in local_pkg_names:
+        echo("Package '{}' does not exist inside this workspace.".format(pkg_name))
         sys.exit()
     package_src_dir = subprocess.check_output(["catkin", "locate", "--src", pkg_name], universal_newlines=True).rstrip(
         "\n")
@@ -341,14 +339,14 @@ def check_paths_(pkg_name):
 
 
 def get_doxygen_template_filename_():
-    return os.path.abspath(os.path.join(self_dir, "templates/Doxygen"))
+    return os.path.abspath(os.path.join(script_root, "templates/Doxygen"))
 
 
 def output_start_status_(pkg_name):
-    click.echo("Starting  " + click.style(">>>", fg="green", bold=True) + " " +
+    echo("Starting  " + click.style(">>>", fg="green", bold=True) + " " +
                click.style(pkg_name, fg="cyan", bold=True))
 
 
 def output_finished_states_(pkg_name):
-    click.echo(click.style("Finished  ", fg="black", bold=True) + click.style("<<<", fg="green") + " " +
+    echo(click.style("Finished  ", fg="black", bold=True) + click.style("<<<", fg="green") + " " +
                click.style(pkg_name, fg="cyan"))

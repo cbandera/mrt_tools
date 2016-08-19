@@ -18,9 +18,9 @@ def main(action, args):
     ws.cd_src()
 
     if action == "init":
-        click.secho("Removing wstool database src/.rosinstall", fg="yellow")
+        wprint("Removing wstool database src/.rosinstall")
         os.remove(".rosinstall")
-        click.echo("Initializing wstool...")
+        echo("Initializing wstool...")
         ws.recreate_index()
         return
 
@@ -56,7 +56,7 @@ def main(action, args):
                     os.chdir(x)
                     subprocess.call("git push", shell=True)
         else:
-            click.echo("No unpushed commits.")
+            echo("No unpushed commits.")
         sys.exit(0)
 
     # Pass the rest to wstool

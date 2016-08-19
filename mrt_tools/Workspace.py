@@ -1,4 +1,5 @@
-from mrt_tools.utilities import changed_base_yaml, update_apt_and_ros_packages, self_dir, is_ros_sourced
+from mrt_tools.utilities import changed_base_yaml, update_apt_and_ros_packages, self_dir, is_ros_sourced, sprint, \
+    eprint, wprint, echo
 from wstool import multiproject_cli, config_yaml, multiproject_cmd, config as wstool_config
 from mrt_tools.Gitlab import Gitlab
 from mrt_tools.Git import test_git_credentials
@@ -18,7 +19,7 @@ class Workspace(object):
 
     def __init__(self, quiet=False):
         """
-        :param quiet: Will suppress all warnings or prompts
+        :param quiet: Will suppress all warnings or input prompts
         """
         self.org_dir = os.getcwd()
         self.root = self.get_root()
@@ -37,29 +38,26 @@ class Workspace(object):
             self.catkin_pkg_names = self.get_catkin_package_names()
             self.wstool_pkg_names = self.get_wstool_package_names()
             if not set(self.catkin_pkg_names).issubset(set(self.wstool_pkg_names)):
-                # click.secho("INFO: wstool and catkin found different packages! Maybe you should run 'ws fix "
-                #             "url_in_package_xml'", fg='yellow')
+                # wprint("INFO: wstool and catkin found different packages! Maybe you should run 'ws fix url_in_package_xml'")
                 # TODO Maybe not so smart to change rosinstall file every time -> snapshots!
                 self.recreate_index()
             self.cd_root()
         elif not quiet:
-            click.secho("No_catkin_workspace_root_found.", fg="red")
-            click.echo("This_command_must_be_invoked_from_within_a_workspace")
-            sys.exit(1)
+            wprint("This_command_must_be_invoked_from_within_a_workspace")
+            eprint("No_catkin_workspace_root_found.")
 
     def create(self):
         """Initialize new catkin workspace"""
         # Test for existing workspace
         if self.root:
-            click.secho("Already inside a catkin workspace. Can't create new.", fg="red")
-            sys.exit(1)
+            eprint("Already inside a catkin workspace. Can't create new.")
 
         # Test whether directory is empty
         if os.listdir("."):
             if not click.confirm("The repository folder is not empty. Would you like to continue?"):
                 sys.exit(0)
 
-        click.secho("Creating workspace", fg="green")
+        sprint("Creating workspace")
         self.root = os.getcwd()
         os.mkdir("src")
         subprocess.call("catkin init", shell=True)
@@ -73,7 +71,7 @@ class Workspace(object):
         catkin_pkgs = set(self.get_catkin_package_names())
         wstool_pks = set(self.get_wstool_package_names())
         if not catkin_pkgs.issubset(wstool_pks):
-            click.echo("wstool and catkin found different packages!")
+            echo("wstool and catkin found different packages!")
             self.recreate_index()
         self.cd_root()
 
@@ -84,7 +82,7 @@ class Workspace(object):
         """Delete everything in current workspace."""
         self.test_for_changes()
         self.cd_root()
-        click.secho("WARNING:", fg="red")
+        wprint("WARNING:")
         click.confirm("Delete everything within " + self.root, abort=True)
         for f in os.listdir(self.root):
             if os.path.isdir(f):
@@ -207,7 +205,7 @@ class Workspace(object):
 
                 if result[0] != "":
                     if not quiet:
-                        click.secho("Unpushed commits in repo '" + pkg + "'", fg="yellow")
+                        wprint("Unpushed commits in repo '" + pkg + "'")
                         subprocess.call("git log --branches --not --remotes --oneline", shell=True)
                     unpushed_repos.append(pkg)
             except OSError:  # Directory does not exist (repo not cloned yet)
@@ -237,10 +235,10 @@ class Workspace(object):
         if len(unpushed_repos) > 0 or len(statuslist) > 0:
             if not quiet:
                 if len(statuslist) > 0:  # Unpushed repos where asked already
-                    click.secho("\nYou have the following uncommited changes:", fg="red")
+                    wprint("\nYou have the following uncommited changes:")
                     for e in statuslist:
-                        click.echo(list(e.keys())[0])
-                        click.echo(list(e.values())[0])
+                        echo(list(e.keys())[0])
+                        echo(list(e.values())[0])
                     click.confirm(prompt, abort=True)
             return True
         else:
@@ -300,14 +298,13 @@ class Workspace(object):
     # TODO have a look at this function
     def resolve_dependencies(self, git=None, default_yes=None):
         # TODO maybe use rosdep2 package directly
-        click.echo("Resolving dependencies...")
+        echo("Resolving dependencies...")
         # Test whether ros is sourced
         if is_ros_sourced() is False:
-            click.secho("ROS_ROOT not set. Run: 'source /opt/ros/$ROS_DISTRO/setup.bash'", fg="red")
-            sys.exit(1)
+            eprint("ROS_ROOT not set. Run: 'source /opt/ros/$ROS_DISTRO/setup.bash'")
 
         if changed_base_yaml():
-            click.secho("Base YAML file changed, running 'rosdep update'.", fg="green")
+            sprint("Base YAML file changed, running 'rosdep update'.")
             subprocess.call("rosdep update", shell=True)
 
         if not git:
@@ -328,8 +325,8 @@ class Workspace(object):
                 missing_packages[match.group(2)] = match.group(1)
 
             if not missing_packages:
-                click.echo(rosdep_output)
-                click.echo(rosdep_err)
+                echo(rosdep_output)
+                echo(rosdep_err)
                 sys.exit(1)
 
             gitlab_packages = []
@@ -344,17 +341,13 @@ class Workspace(object):
                     # no Gitlab project found
                     if not self.updated_apt:
                         # first not found package. Update apt-get and ros.
-                        click.secho("Updating mrt apt-get and rosdep and resolve again. This might take a while ...",
-                                    fg='green')
+                        sprint("Updating mrt apt-get and rosdep and resolve again. This might take a while ...")
                         update_apt_and_ros_packages()
                         self.updated_apt = True
                         break
                     else:
-                        click.secho(
-                            "Package {0} (requested from: {1}) could not be found.".format(missing_package,
-                                                                                           package_dep_specified),
-                            fg='red')
-                        sys.exit(1)
+                        eprint("Package {0} (requested from: {1}) could not be found.".format(missing_package,
+                                                                                              package_dep_specified))
             # Load new gitlab packages
             self.write()
 

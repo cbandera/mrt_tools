@@ -1,7 +1,7 @@
 from mrt_tools import CredentialManager as cm
 from simplejson.scanner import JSONDecodeError
 from requests.exceptions import ConnectionError
-from mrt_tools.utilities import get_user_choice
+from mrt_tools.utilities import get_user_choice, eprint, wprint, sprint, echo
 from mrt_tools.Git import get_gituserinfo
 from mrt_tools.settings import user_settings
 from Crypto.PublicKey import RSA
@@ -63,8 +63,7 @@ class Gitlab(object):
                         self.ssh_key = local_keys[choice_idx]
                     self._upload_ssh_key()
             except ConnectionError:
-                click.secho("Couldn't connect to server. Are you connected to the internet?")
-                sys.exit(1)
+                eprint("Couldn't connect to server. Are you connected to the internet?")
 
     def connect(self, quiet=False):
         """Connects to the server"""
@@ -84,7 +83,7 @@ class Gitlab(object):
                 # Try to connect from extern
                 username, password = cm.credentialManager.get_credentials(quiet=quiet)
                 if self.token:
-                    click.secho("Connection to server was unsuccessful. Trying authenticated access.", fg="yellow")
+                    wprint("Connection to server was unsuccessful. Trying authenticated access.")
                     self.server = gitlab.Gitlab(self.host, token=self.token, auth=(username, password))
                 else:
                     # create token, therefor login with username and password
@@ -92,19 +91,16 @@ class Gitlab(object):
                     self.server.login(username, password)
                     gitlab_user = self.server.currentuser()
                     if gitlab_user is None:
-                        click.secho("Could not create token. Exiting...", fg="red")
-                        sys.exit(1)
+                        eprint("Could not create token. Exiting...")
                     else:
                         self.token = gitlab_user['private_token']
-                        click.secho("Created gitlab token: {}".format(self.token), fg="green")
+                        sprint("Created gitlab token: {}".format(self.token))
                     cm.credentialManager.store('token', self.token)
 
         except gitlab.exceptions.HttpError:
-            click.secho("There was a problem logging in to gitlab. Did you use your correct credentials?", fg="red")
-            sys.exit(1)
+            eprint("There was a problem logging in to gitlab. Did you use your correct credentials?")
         except ConnectionError:
-            click.secho("No internet connection. Could not connect to server.", fg="red")
-            sys.exit(1)
+            eprint("No internet connection. Could not connect to server.")
 
     def _check_ssh_key(self):
         """Test for the presence and functionality of a ssh-key."""
@@ -121,12 +117,12 @@ class Gitlab(object):
 
     def _upload_ssh_key(self):
         """Add ssh key to gitlab user account"""
-        click.echo("Uploading key " + self.ssh_key.name)
+        echo("Uploading key " + self.ssh_key.name)
         self.server.addsshkey(self.ssh_key.name, self.ssh_key.public_key)
 
     def get_namespaces(self):
         """Returns a dict {name:id} of all namespaces in Gitlab"""
-        click.echo("Retrieving namespaces...")
+        echo("Retrieving namespaces...")
         namespaces = list(self.server.getall(self.server.getgroups, per_page=100))
         namespaces = sorted(namespaces, key=lambda k: k['name'])
         user_name = self.server.currentuser()['username']
@@ -144,7 +140,7 @@ class Gitlab(object):
         :param ns:  Namespace in which to search
         :param pkg_name: Name of the repo
         """
-        click.secho("Search for package " + pkg_name, fg='red')
+        echo("Search for package " + pkg_name)
         # Results is a dict or a list of dicts, depending on how many results were found
         results = list(self.server.getall(self.server.searchproject, pkg_name, per_page=100))
 
@@ -162,7 +158,7 @@ class Gitlab(object):
 
         if count is 0:
             # None found
-            click.secho("Package " + pkg_name + " could not be found.", fg='red')
+            wprint("Package " + pkg_name + " could not be found.")
             return None
         if count is 1:
             # Only one found
@@ -173,7 +169,7 @@ class Gitlab(object):
                                         prompt="More than one repo with \"" + str(
                                             pkg_name) + "\" found. Please choose")
 
-        click.secho("Found " + matching_repos[choice]['path_with_namespace'], fg='green')
+        sprint("Found " + matching_repos[choice]['path_with_namespace'])
         return matching_repos[choice]
 
     def create_repo(self, pkg_name):
@@ -183,18 +179,17 @@ class Gitlab(object):
         :param pkg_name: Name of the repo to create
         """
         # Dialog to choose namespace
-        click.echo("Available namespaces in gitlab, please select one for your new project:")
+        echo("Available namespaces in gitlab, please select one for your new project:")
         namespaces = self.get_namespaces()
         choice_index, choice_value = get_user_choice(namespaces.keys())
-        click.echo("Using namespace '" + choice_value + "'")
+        echo("Using namespace '" + choice_value + "'")
         ns_id = namespaces[choice_value]
 
         # Check whether repo exists
         existing_repo = self.find_repo(pkg_name, list(namespaces.keys())[int(choice_index)])
 
         if existing_repo is not None:
-            click.secho("    ERROR Repo exist already: " + existing_repo["web_url"], fg='red')
-            sys.exit(1)
+            eprint("    ERROR Repo exist already: " + existing_repo["web_url"])
 
         # Create repo
         if ns_id == 0:  # Create new user namespace
@@ -202,11 +197,10 @@ class Gitlab(object):
         else:
             response = self.server.createproject(pkg_name, namespace_id=ns_id)
         if not response:
-            click.secho("There was a problem with creating the repo.", fg='red')
-            sys.exit(1)
+            eprint("There was a problem with creating the repo.")
 
         # Return URL
-        click.echo("Repository URL is: " + response[self.get_url_string()])
+        echo("Repository URL is: " + response[self.get_url_string()])
         return response[self.get_url_string()]
 
     @staticmethod
@@ -277,11 +271,11 @@ class SSHkey(object):
         output.replace("\n", "")
         subprocess.call(output, shell=True)
         subprocess.call("ssh-add " + self.path, shell=True)
-        click.echo("Wrote key to " + self.path + "(.pub)")
+        echo("Wrote key to " + self.path + "(.pub)")
 
     def create(self):
         """Create new SSH key"""
-        click.echo("Generating new SSH Key")
+        echo("Generating new SSH Key")
         key = RSA.generate(2048)
         self.secret_key = key.exportKey('PEM')
         self.public_key = key.publickey().exportKey('OpenSSH')

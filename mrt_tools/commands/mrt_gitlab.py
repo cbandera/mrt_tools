@@ -49,14 +49,12 @@ def create_repo(pkg_name):
         pkg_name = os.path.basename(ws.org_dir)
 
     if pkg_name not in pkg_list:
-        click.secho("{0} does not seem to be a catkin package.".format(pkg_name), fg="red")
-        sys.exit(1)
+        eprint("{0} does not seem to be a catkin package.".format(pkg_name))
 
-    click.echo("Creating repo for {0}".format(pkg_name))
+    echo("Creating repo for {0}".format(pkg_name))
     for ps in ws.wstool_config.get_config_elements():
         if ps.get_local_name() == pkg_name:
-            click.secho("Repository has a url already: {0}".format(ps.get_path_spec().get_uri()))
-            sys.exit(1)
+            eprint("Repository has a url already: {0}".format(ps.get_path_spec().get_uri()))
 
     ws.cd_src()
     os.chdir(pkg_name)
@@ -65,7 +63,7 @@ def create_repo(pkg_name):
     subprocess.call("git init", shell=True)
     subprocess.call("git remote add origin " + ssh_url + " >/dev/null 2>&1", shell=True)
     ws.recreate_index()
-    click.echo("You should run 'mrt maintenance update_url_in_package_xml' now")
+    echo("You should run 'mrt maintenance update_url_in_package_xml' now")
 
 
 ########################################################################################################################
@@ -88,7 +86,7 @@ def permissions(ctx):
 @click.pass_obj
 def add_user(git):
     """Add a user to a repository"""
-    click.echo("Loading... please wait a moment")
+    echo("Loading... please wait a moment")
 
     users = list(git.server.getall(git.server.getusers))
     users = sorted(users, key=lambda k: k['name'])
@@ -96,12 +94,12 @@ def add_user(git):
     repo_dicts = sorted(repo_dicts, key=lambda k: k['path_with_namespace'])
     user_choice, _ = get_user_choice([user["name"] for user in users], prompt="Please choose a user")
     user = users[user_choice]
-    click.echo("--> Selected user '{}'\n".format(user['name']))
+    echo("--> Selected user '{}'\n".format(user['name']))
 
     repo_choice, _ = get_user_choice([repo["path_with_namespace"] for repo in repo_dicts],
                                      prompt="Please choose a repo.")
     repo = repo_dicts[repo_choice]
-    click.echo("--> Selected repo '{}'\n".format(repo["name_with_namespace"]))
+    echo("--> Selected repo '{}'\n".format(repo["name_with_namespace"]))
 
     roles = ["Guest", "Reporter", "Developer", "Master", "Owner"]
     _, role = get_user_choice(roles, prompt='Please choose a role for the user.', default=2)
@@ -132,14 +130,14 @@ def add_user(git):
     ws.load()
     new_repos = ws.get_catkin_packages()
     new_repos.pop(pkg_name)
-    click.echo("\n\nFound following new repos:")
+    echo("\n\nFound following new repos:")
     for r in new_repos:
-        click.echo("- {}".format(r))
+        echo("- {}".format(r))
 
     for r in new_repos:
         if click.confirm("\nAdd user {0} to repo {1} aswell?".format(user["name"].upper(), r.upper()), default=True):
             # Add user as well
-            click.echo("\nAdding user {0} to repo {1}\n".format(user["name"].upper(),
+            echo("\nAdding user {0} to repo {1}\n".format(user["name"].upper(),
                                                                 r.upper()))
             repo_id = [s["id"] for s in repo_dicts if s["name"] == r]
             _, role = get_user_choice(roles, prompt='Please choose a role for the user for this repo.', default=2)
@@ -167,7 +165,7 @@ def users(git):
     user_list = list(git.server.getall(git.server.getusers, per_page=100))
     user_list = sorted(user_list, key=lambda k: k['name'])
     for index, item in enumerate(user_list):
-        click.echo("(" + str(index) + ") " + item['name'])
+        echo("(" + str(index) + ") " + item['name'])
 
 
 @show.command(short_help="Display a list of repositories",
@@ -178,7 +176,7 @@ def repos(git):
     repo_list = list(git.server.getall(git.server.getprojects, per_page=100))
     repo_list = sorted(repo_list, key=lambda k: k['name'])
     for index, item in enumerate(repo_list):
-        click.echo("(" + str(index) + ") " + item['name'])
+        echo("(" + str(index) + ") " + item['name'])
 
 
 @show.command(short_help="Display a list of group names",
@@ -189,7 +187,7 @@ def groups(git):
     group_list = list(git.server.getall(git.server.getgroups, per_page=100))
     group_list = sorted(group_list, key=lambda k: k['name'])
     for index, item in enumerate(group_list):
-        click.echo("(" + str(index) + ") " + item['name'])
+        echo("(" + str(index) + ") " + item['name'])
 
 
 @show.command(short_help="Display a list of namespaces",
@@ -204,7 +202,7 @@ def namespaces(git):
     #     ns_list.append({'name': user_name, 'id': 0})
     ns_list = git.get_namespaces()
     for index, item in enumerate(ns_list):
-        click.echo("(" + str(index) + ") " + item)
+        echo("(" + str(index) + ") " + item)
 
 
 @show.command(short_help="Open SW catalog",
