@@ -5,15 +5,28 @@ import os
 import click
 import sys
 
+"""
+This is the landing point for the cli tool.
+
+sudo: We experienced difficulties, when the mrt tools were used with superuser priviliges, as cache and settings
+files were not readable anymore for the normal user. Therefor we do not allow root usage.
+
+Virtualenv: If the tools are installed a virtualenv, we activate it before starting any command, so that all
+subprocesses called are executed from inside the virtualenv.
+
+All subcommands lie in the 'commands' folder and need to start with 'mrt_'. They will be automatically parsed and
+added as subcommands.
+"""
+
+# TODO GENERAL
+# TODO test whether we still need a virtualenv
+# TODO Think about documentation -> sphinx? readthedocs?
+
 # Test for sudo
 if os.getuid() == 0:
     if not user_settings['Other']['ALLOW_ROOT']:
         click.secho("Should not be run as root. Please use without sudo.", fg="red")
         sys.exit(0)
-
-# TODO GENERAL
-# TODO test whether we still need a virtualenv
-# TODO Think about documentation -> sphinx? readthedocs?
 
 # Activate virtualenv if found
 venv_activate_file = None
@@ -53,7 +66,7 @@ class MyCLI(click.MultiCommand):
         return ns['main']
 
 
-cli = MyCLI(help='A toolbelt full of mrt scripts.')
+cli = MyCLI(help='The swiss army knife for ROS developers.')
 
 if __name__ == '__main__':
     cli()
