@@ -7,12 +7,12 @@ from mrt_tools.Git import get_gituserinfo
 # Autocompletion
 try:
     tmp_ws = Workspace(quiet=True)
-    suggestions = tmp_ws.get_catkin_package_names()
-    repo_list = import_repo_names()
+    local_pkg_names = tmp_ws.get_catkin_package_names()
+    remote_pkg_names = import_repo_names()
     os.chdir(tmp_ws.org_dir)
 except:
-    suggestions = []
-    repo_list = []
+    local_pkg_names = []
+    remote_pkg_names = []
 
 self_dir = get_script_root()
 
@@ -41,7 +41,7 @@ def main(ctx):
 @main.command(short_help="Clone catkin packages from gitlab.",
               help="This command let's you clone repositories directly into your workspace. Dependencies to other "
                    "packages are automatically resolved. Try out the bashcompletion for the package name.")
-@click.argument("pkg_names", type=click.STRING, required=True, nargs=-1, autocompletion=repo_list)
+@click.argument("pkg_names", type=click.STRING, required=True, nargs=-1, autocompletion=remote_pkg_names)
 @click.pass_obj
 def add(ws, pkg_names):
     """Clone catkin packages from gitlab."""
@@ -72,7 +72,7 @@ def add(ws, pkg_names):
 @main.command(short_help="Deletes package from workspace.",
               help="This command let's you savely remove a package from the current workspace, by checking for "
                    "uncommited or unpushed changes and removing the directory as well as the .rosinstall config entry.")
-@click.argument("pkg_names", type=click.STRING, required=True, nargs=-1, autocompletion=suggestions)
+@click.argument("pkg_names", type=click.STRING, required=True, nargs=-1, autocompletion=local_pkg_names)
 @click.pass_obj
 def remove(ws, pkg_names):
     """Delete package from workspace."""
@@ -166,7 +166,7 @@ def deps(ws):
                    "workspace. You can specify a package name, use the '--this' flag or leave the argument away to "
                    "create dependency graphs for the whole workspace. Dependencys are checked by using catkin, "
                    "the resulting images are written to 'ws/pics/'")
-@click.argument("pkg_name", type=click.STRING, required=False, autocompletion=suggestions)
+@click.argument("pkg_name", type=click.STRING, required=False, autocompletion=local_pkg_names)
 @click.option("--this", is_flag=True, help="Use the package containing the current directory.")
 @click.option("--repos-only", is_flag=True)
 @click.pass_obj
@@ -196,7 +196,7 @@ def draw(ws, pkg_name, this, repos_only):
 
 @deps.command(short_help="List dependencies of catkin packages.",
               help="This will list all dependencies of a named catkin package.")
-@click.argument("pkg_name", type=click.STRING, required=False, autocompletion=suggestions)
+@click.argument("pkg_name", type=click.STRING, required=False, autocompletion=local_pkg_names)
 @click.option("--this", is_flag=True, help="Use the package containing the current directory.")
 @click.pass_obj
 def show(ws, pkg_name, this):
@@ -234,7 +234,7 @@ def show(ws, pkg_name, this):
 @deps.command(short_help="Lookup reverse dependencies.",
               help="This will crawl all packages (in the MRT workspace, on the master branch, on the latest commit, "
                    "in gitlab) inorder to detect, who directly relies on this pkg.")
-@click.argument("pkg_name", type=click.STRING, required=False, autocompletion=suggestions)
+@click.argument("pkg_name", type=click.STRING, required=False, autocompletion=local_pkg_names)
 @click.option("--this", is_flag=True, help="Use the package containing the current directory.")
 @click.option("-u", "--update", is_flag=True)
 @click.pass_obj
