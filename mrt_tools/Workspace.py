@@ -1,6 +1,6 @@
 from mrt_tools.utilities import changed_base_yaml, update_apt_and_ros_packages, self_dir, is_ros_sourced
 from wstool import multiproject_cli, config_yaml, multiproject_cmd, config as wstool_config
-from mrt_tools.Git import Git, test_git_credentials
+from mrt_tools.Gitlab import Gitlab, test_git_credentials
 from catkin_tools.context import Context
 from catkin_pkg import packages
 import subprocess
@@ -307,7 +307,7 @@ class Workspace(object):
             subprocess.call("rosdep update", shell=True)
 
         if not git:
-            git = Git()
+            git = Gitlab()
 
         regex_rosdep_resolve = re.compile("ERROR\[([^\]]*)\]: Cannot locate rosdep definition for \[([^\]]*)\]")
 

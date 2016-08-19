@@ -1,4 +1,4 @@
-from mrt_tools.Git import Git, SSHkey
+from mrt_tools.Gitlab import Gitlab, SSHkey
 from mrt_tools.Workspace import Workspace
 from mrt_tools.utilities import *
 from mrt_tools.CredentialManager import credentialManager
@@ -21,7 +21,7 @@ def main():
 def create_token():
     """Create new gitlab token"""
     credentialManager.delete('token')
-    Git()
+    Gitlab()
 
 
 @main.command(short_help="Create new ssh key",
@@ -60,7 +60,7 @@ def create_repo(pkg_name):
 
     ws.cd_src()
     os.chdir(pkg_name)
-    git = Git()
+    git = Gitlab()
     ssh_url = git.create_repo(pkg_name)
     subprocess.call("git init", shell=True)
     subprocess.call("git remote add origin " + ssh_url + " >/dev/null 2>&1", shell=True)
@@ -75,7 +75,7 @@ def create_repo(pkg_name):
 @click.pass_context
 def permissions(ctx):
     """Tools for handling permissions..."""
-    ctx.obj = Git()
+    ctx.obj = Gitlab()
 
 
 @permissions.command(short_help="Add a user to a repository",
@@ -156,7 +156,7 @@ def add_user(git):
 @click.pass_context
 def show(ctx):
     """Display a list of..."""
-    ctx.obj = Git()
+    ctx.obj = Gitlab()
 
 
 @show.command(short_help="Display a list of user names",

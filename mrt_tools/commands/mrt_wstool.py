@@ -1,5 +1,5 @@
 from mrt_tools.Workspace import Workspace
-from mrt_tools.Git import test_git_credentials
+from mrt_tools.Gitlab import test_git_credentials
 from mrt_tools.utilities import *
 
 

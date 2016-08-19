@@ -3,7 +3,7 @@ from string import Template
 from mrt_tools.Workspace import Workspace
 from mrt_tools.Digraph import Digraph
 from mrt_tools.utilities import *
-from mrt_tools.Git import Git
+from mrt_tools.Gitlab import Gitlab
 import stat
 
 # Autocompletion
@@ -52,7 +52,7 @@ def add(ws, pkg_names):
     Execute this script from within a catkin workspace
     """
 
-    git = Git()
+    git = Gitlab()
 
     for pkg_name in pkg_names:
 
@@ -135,7 +135,7 @@ def create(ws, pkg_name, pkg_type, ros, create_git_repo):
     create_files(pkg_name, pkg_type, ros)
 
     if create_git_repo:
-        git = Git()
+        git = Gitlab()
         url = git.create_repo(pkg_name)
         subprocess.call("sed -i " +
                         "-e 's#\${PACKAGE_REPOSITORY_URL}#" + url + "#g' " +

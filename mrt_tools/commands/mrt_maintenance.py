@@ -2,7 +2,7 @@ from mrt_tools.CredentialManager import credentialManager, set_git_credentials
 from wstool import config as wstool_config
 from mrt_tools.Workspace import Workspace
 from mrt_tools.utilities import *
-from mrt_tools.Git import Git
+from mrt_tools.Gitlab import Gitlab
 import getpass
 
 
@@ -116,7 +116,7 @@ def update_cmakelists(package, this):
 
     # download newest version:
     click.echo("Downloading newest template from gitlab")
-    git = Git()
+    git = Gitlab()
     mrt_build_repo = git.find_repo("mrt_build")
     new_cmakelists = git.server.getrawfile(mrt_build_repo['id'], "master", 'mrt_tools/templates/CMakeLists.txt')
     for line in new_cmakelists.splitlines():
@@ -197,7 +197,7 @@ def rename_pkg(new_name):
     click.echo("")
     click.confirm("Do you want to move the gitlab project now?", abort=True)
     click.echo("Moving gitlab project...")
-    git = Git()
+    git = Gitlab()
     project = git.find_repo(package)
     namespace = project["namespace"]["name"]
     project_id = project["id"]
@@ -251,7 +251,7 @@ def update_repo_cache(quiet):
     error_occurred = False
     try:
         # Connect
-        git = Git(quiet=quiet)
+        git = Gitlab(quiet=quiet)
         repo_dicts = git.get_repos()
         if not repo_dicts:
             raise Exception
@@ -320,7 +320,7 @@ def settings():
               help="This will download every package.xml file from Gitlab, that you have access to. These files will "
                    "be used for reverse dependency lookup.")
 def update_cached_deps():
-    git = Git()
+    git = Gitlab()
 
     if os.path.exists(user_settings['Cache']['CACHED_DEPS_WS']):
         click.echo("Removing existing files in workspace")
@@ -386,7 +386,7 @@ def delete_credentials():
     subprocess.call("git config --global --remove-section user", shell=True)
 
     # Remove SSH Key
-    sshkeys = Git.get_local_ssh_keys()
+    sshkeys = Gitlab.get_local_ssh_keys()
     if sshkeys:
         click.secho("You have an ssh key stored on this machine. If you want to remove ALL of your userdata, "
                     "please delete it manually.", fg="yellow")
@@ -412,7 +412,7 @@ def reset():
     set_gituserinfo(name=name, email=email)
     credentialManager.store('username', username)
     credentialManager.store('password', password)
-    Git()
+    Gitlab()
 
 
 @credentials.command(short_help="Provide credentials to be stored.")
