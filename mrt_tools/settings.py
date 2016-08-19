@@ -3,6 +3,15 @@ import ConfigParser
 import click
 import os
 
+"""
+Settings
+
+Here, all configurable options for the tools are listed. They are stored in yaml format in a persistent file in the
+users home folder and will be read every time, before starting up the mrt tools.
+Default settings are listed here, but will be overridden by user settings.
+The read and write functions will make sure to silently update settings to the newest version,
+dropping keys that are no longer used and adding those, that are missing.
+"""
 
 CONFIG_DIR = os.path.expanduser("~/.mrt_tools")
 CONFIG_FILE = os.path.join(CONFIG_DIR, "mrt_tools.cfg")
