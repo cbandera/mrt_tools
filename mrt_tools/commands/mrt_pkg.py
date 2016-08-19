@@ -1,10 +1,8 @@
-from string import Template
-
 from mrt_tools.Workspace import Workspace
 from mrt_tools.Digraph import Digraph
 from mrt_tools.utilities import *
 from mrt_tools.Gitlab import Gitlab
-import stat
+from mrt_tools.Git import get_gituserinfo
 
 # Autocompletion
 try:
@@ -107,7 +105,9 @@ def create(ws, pkg_name, pkg_type, ros, create_git_repo):
     """ Create a new catkin package """
     ws.cd_root()
 
-    pkg_name = check_naming(pkg_name)
+    while re.match(user_settings['ROS']['NamingRegexPattern'], pkg_name) is None:
+        pkg_name = click.prompt(
+            "Please enter a package name conforming with this regex: {}".format(user_settings['ROS']['NamingRegexPattern']))
 
     if ros:
         pkg_name += "_ros"
