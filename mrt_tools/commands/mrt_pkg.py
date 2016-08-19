@@ -107,7 +107,8 @@ def create(ws, pkg_name, pkg_type, ros, create_git_repo):
 
     while re.match(user_settings['ROS']['NamingRegexPattern'], pkg_name) is None:
         pkg_name = click.prompt(
-            "Please enter a package name conforming with this regex: {}".format(user_settings['ROS']['NamingRegexPattern']))
+            "Please enter a package name conforming with this regex: {}".format(
+                user_settings['ROS']['NamingRegexPattern']))
 
     if ros:
         pkg_name += "_ros"
@@ -315,7 +316,6 @@ def create_executable(ws, node_name, tf, diagnostics):
             "Node name should not end with 'node', because it can be run as a nodelet aswell: {}.".format(file_name),
             fg="red")
         sys.exit()
-
 
     # CREATE FILES
     def copy_template_file(template_file, rel_target_path, append=False):

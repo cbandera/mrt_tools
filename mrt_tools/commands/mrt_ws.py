@@ -1,4 +1,4 @@
-from mrt_tools.Gitlab import test_git_credentials
+from mrt_tools.Git import test_git_credentials
 from mrt_tools.Workspace import Workspace
 from mrt_tools.utilities import *
 
@@ -17,8 +17,7 @@ def main(ctx):
 
 
 @main.command(short_help="Initialize a catkin workspace.",
-              help="This command initializes a new catkin workspace in the current directory or the one (optionally) "
-                   "specified.")
+              help="This command initializes a new catkin workspace in the current directory or the one specified.")
 @click.argument('ws_name', required=False, type=click.STRING)
 @click.pass_obj
 def init(ws, ws_name):
