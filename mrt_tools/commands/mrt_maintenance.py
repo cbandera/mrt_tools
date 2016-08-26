@@ -1,4 +1,6 @@
 from mrt_tools.CredentialManager import credentialManager, set_git_credentials
+from mrt_tools.Git import set_gituserinfo
+from mrt_tools.Package import check_and_update_cmakelists
 from wstool import config as wstool_config
 from mrt_tools.Workspace import Workspace
 from mrt_tools.utilities import *

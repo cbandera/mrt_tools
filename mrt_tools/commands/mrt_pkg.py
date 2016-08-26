@@ -1,3 +1,4 @@
+from mrt_tools.Package import create_files, create_directories
 from mrt_tools.Workspace import Workspace
 from mrt_tools.Digraph import Digraph
 from mrt_tools.utilities import *
