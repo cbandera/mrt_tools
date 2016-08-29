@@ -54,7 +54,7 @@ class Workspace(object):
 
         # Test whether directory is empty
         if os.listdir("."):
-            if not click.confirm("The repository folder is not empty. Would you like to continue?"):
+            if not click.confirm("The current folder is not empty. Would you like to continue?"):
                 sys.exit(0)
 
         sprint("Creating workspace")
@@ -235,7 +235,7 @@ class Workspace(object):
         if len(unpushed_repos) > 0 or len(statuslist) > 0:
             if not quiet:
                 if len(statuslist) > 0:  # Unpushed repos where asked already
-                    wprint("\nYou have the following uncommited changes:")
+                    wprint("\nYou have the following uncommitted changes:")
                     for e in statuslist:
                         echo(list(e.keys())[0])
                         echo(list(e.values())[0])

@@ -5,9 +5,7 @@ from mrt_tools.utilities import get_user_choice, eprint, wprint, sprint, echo
 from mrt_tools.Git import get_gituserinfo
 from mrt_tools.settings import user_settings
 from Crypto.PublicKey import RSA
-from builtins import object
-from builtins import next
-from builtins import str
+from builtins import object, next, str
 import subprocess
 import gitlab
 import click
@@ -217,7 +215,7 @@ class Gitlab(object):
 class SSHkey(object):
     """The ssh-key is an authentication key for communicating with the gitlab server through the git cli-tool."""
 
-    def __init__(self, name="mrtgitlab", dir_path="~/.ssh"):
+    def __init__(self, name="mrt_tools", dir_path="~/.ssh"):
         self.name = name
         self.secret_key = ""
         self.dir_path = os.path.expanduser(dir_path)

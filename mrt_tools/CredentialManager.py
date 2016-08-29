@@ -94,7 +94,7 @@ class DummyCredentialManager(BaseCredentialManager):
 
 class KeyringCredentialManager(BaseCredentialManager):
     """Base class for all keyring credential managers"""
-    SERVICE_NAME = "mrtgitlab"
+    SERVICE_NAME = "mrt_tools"
 
     def get(self, key):
         return keyring.get_password(self.SERVICE_NAME, key)

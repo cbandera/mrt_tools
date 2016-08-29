@@ -16,7 +16,7 @@ def main():
 
 @main.command(short_help="Create new gitlab token",
               help="A Gitlab token is a private keyfile, that is needed to communicate via the Gitlab API to the "
-                   "server. The keyfile is stored in '~/.mrtgitlab/.token'. You can specify whether you want the "
+                   "server. The keyfile is stored in '~/.mrt_tools/.token'. You can specify whether you want the "
                    "token to be saved on the system in the setttings.")
 def create_token():
     """Create new gitlab token"""
@@ -113,10 +113,10 @@ def add_user(git):
 
     # Create temporary workspace
     org_dir = os.getcwd()
-    if os.path.exists("/tmp/mrtgitlab_test_ws"):
-        shutil.rmtree("/tmp/mrtgitlab_test_ws")
-    os.mkdir("/tmp/mrtgitlab_test_ws")
-    os.chdir("/tmp/mrtgitlab_test_ws")
+    if os.path.exists("/tmp/mrt_tools_test_ws"):
+        shutil.rmtree("/tmp/mrt_tools_test_ws")
+    os.mkdir("/tmp/mrt_tools_test_ws")
+    os.chdir("/tmp/mrt_tools_test_ws")
     ws = Workspace(quiet=True)
     ws.create()
 
@@ -144,7 +144,7 @@ def add_user(git):
             git.server.addprojectmember(repo_id[0], user["id"], role)
 
     os.chdir(org_dir)
-    shutil.rmtree("/tmp/mrtgitlab_test_ws")
+    shutil.rmtree("/tmp/mrt_tools_test_ws")
 
 
 ########################################################################################################################

@@ -16,8 +16,8 @@ def test_create_sshkey_default(runner):
         curr_dir = os.getcwd()
         ssh = SSHkey(dir_path=curr_dir)
         ssh.create()
-        assert os.path.isfile(os.path.join(curr_dir, "mrtgitlab"))
-        assert os.path.isfile(os.path.join(curr_dir, "mrtgitlab.pub"))
+        assert os.path.isfile(os.path.join(curr_dir, "mrt_tools"))
+        assert os.path.isfile(os.path.join(curr_dir, "mrt_tools.pub"))
 
 
 def test_create_sshkey_custom_name(runner):

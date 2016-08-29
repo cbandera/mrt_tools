@@ -7,9 +7,9 @@ ARG pw
 RUN echo "$user    ALL = NOPASSWD: /usr/bin/apt-get" | sudo tee -a /etc/sudoers &> /dev/null \
     && useradd -ms /bin/bash $user\
     && mkdir -p /workspace/src \
-    && mkdir -p /home/$user/.mrtgitlab/ \
+    && mkdir -p /home/$user/.mrt_tools/ \
 		&& cp /tmp/userFiles/gitconfig /home/$user/.gitconfig \
-		&& cp /tmp/userFiles/mrt.cfg /home/$user/.mrtgitlab/mrt.cfg \
+		&& cp /tmp/userFiles/mrt.cfg /home/$user/.mrt_tools/mrt.cfg \
     && chown -R $user:$user /home/$user \
     && chown -R $user:$user /workspace
 

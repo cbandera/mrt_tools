@@ -4,8 +4,8 @@ set -e
 
 # copy user data
 cp /tmp/userFiles/gitconfig ~/.gitconfig
-mkdir -p ~/.mrtgitlab
-cp /tmp/userFiles/mrt.cfg ~/.mrtgitlab/
+mkdir -p ~/.mrt_tools
+cp /tmp/userFiles/mrt.cfg ~/.mrt_tools/
 
 source /opt/ros/jade/setup.bash
 
