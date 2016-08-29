@@ -46,7 +46,7 @@ def echo(message):
     :param message:
     :return: None
     """
-    echo(message)
+    click.echo(message)
 
 
 def convert_to_snake_case(name):
@@ -219,6 +219,9 @@ def import_repo_names(ctx=None, incomplete=None, cwords=None, cword=None):
 
 # TODO maybe create a file called AutoDeps or DependencyManagement...
 def changed_base_yaml():
+    if not user_settings['Dependencies']['BASE_YAML_URL']:
+        return False
+
     echo("Testing for changes in rosdeps...")
     import hashlib
     hasher = hashlib.md5()

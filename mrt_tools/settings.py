@@ -26,7 +26,7 @@ default_settings = {
         'CACHED_DEPS_WS': os.path.join(CONFIG_DIR, "deps_cache_ws"),
     },
     'Gitlab': {
-        'HOST_URL': "https://gitlab.mrt.uni-karlsruhe.de",
+        'HOST_URL': "",
         'CACHE_GIT_CREDENTIALS_FOR_HTTPS_REPOS': True,
         'GIT_CACHE_TIMEOUT': 900,  # in seconds
         'STORE_CREDENTIALS_IN': "",

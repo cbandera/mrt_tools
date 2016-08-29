@@ -11,18 +11,14 @@ from builtins import str
 import subprocess
 import gitlab
 import click
-import sys
 import os
 
-
-# TODO move all "GIT" functions from utilities into this file
 
 class Gitlab(object):
     def __init__(self, quiet=False):
         # Host URL
         self.host = user_settings['Gitlab']['HOST_URL']
         self.use_ssh = user_settings['Gitlab']['USE_SSH']
-        self.token = cm.credentialManager.get_token()
         self.server = None
         self.ssh_key = None
 
@@ -67,38 +63,40 @@ class Gitlab(object):
 
     def connect(self, quiet=False):
         """Connects to the server"""
+        token = cm.credentialManager.get_token()
+        username, password = cm.credentialManager.get_credentials(quiet=quiet)
+
         try:
-            # First we try to connect with token. This way, we don't necessarily need username and password.
             connection_successful = False
-            if self.token:
+
+            # Try to connect with token by default.
+            # This will fail if gitlab is protected by additional http authentication.
+            if token is not None:
+                self.server = gitlab.Gitlab(self.host, token=token)
+                # Test connection
                 try:
-                    self.server = gitlab.Gitlab(self.host, token=self.token)
-                    # Test connection
                     self.server.currentuser()
                     connection_successful = True
                 except JSONDecodeError:
                     connection_successful = False
-            # TODO think about the order and login settigns again
-            if not connection_successful or not self.token:
-                # Try to connect from extern
-                username, password = cm.credentialManager.get_credentials(quiet=quiet)
-                if self.token:
-                    wprint("Connection to server was unsuccessful. Trying authenticated access.")
-                    self.server = gitlab.Gitlab(self.host, token=self.token, auth=(username, password))
+
+            # If we have no token, or the connection was unsuccessful, try to connect with credentials
+            if not connection_successful:
+                self.server = gitlab.Gitlab(self.host, auth=(username, password))
+                self.server.login(username, password)
+
+            # Create token if we don't have one
+            if not token and user_settings['Gitlab']['STORE_API_TOKEN']:
+                gitlab_user = self.server.currentuser()
+                if gitlab_user is None:
+                    eprint("Could not create token. Exiting...")
                 else:
-                    # create token, therefor login with username and password
-                    self.server = gitlab.Gitlab(self.host, auth=(username, password))
-                    self.server.login(username, password)
-                    gitlab_user = self.server.currentuser()
-                    if gitlab_user is None:
-                        eprint("Could not create token. Exiting...")
-                    else:
-                        self.token = gitlab_user['private_token']
-                        sprint("Created gitlab token: {}".format(self.token))
-                    cm.credentialManager.store('token', self.token)
+                    token = gitlab_user['private_token']
+                    sprint("Created gitlab token: {}".format(token))
+                    cm.credentialManager.store('token', token)
 
         except gitlab.exceptions.HttpError:
-            eprint("There was a problem logging in to gitlab. Did you use your correct credentials?")
+            eprint("There was a problem logging in to Gitlab. Did you use your correct credentials?")
         except ConnectionError:
             eprint("No internet connection. Could not connect to server.")
 
