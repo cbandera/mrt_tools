@@ -23,6 +23,7 @@ added as subcommands.
 # TODO GENERAL
 # TODO test whether we still need a virtualenv
 # TODO Think about documentation -> sphinx? readthedocs?
+# TODO add logging
 
 # Test for sudo
 if os.getuid() == 0:
