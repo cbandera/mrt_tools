@@ -1,5 +1,6 @@
-from mrt_tools.utilities import self_dir, eprint, touch, echo
+from mrt_tools.utilities import self_dir, eprint, touch, echo, FullParser, ET
 from mrt_tools.Git import get_gituserinfo
+from string import Template
 import subprocess
 import shutil
 import click
@@ -7,27 +8,79 @@ import os
 
 
 # TODO Create custom package class as wrapper for all package relevant functions
+class Package(object):
+    def __init__(self, name):
+        self.name = name
+
+    def create_from_template(self):
+        pass
+
+
+class Manifest(object):
+    def __init__(self, path):
+        self.path = path
+        if os.path.exists(self.path):
+            self.manifest = ET.parse(path, parser=FullParser())
+
+    def create_from_template(self, pkgname, username, useremail):
+        self.manifest = ET.parse(os.path.join(self_dir, "templates/package.xml"), parser=FullParser())
+        for e in self.manifest.findall("author"):
+            e.text = username
+            e.attrib['email']=useremail
+        for e in self.manifest.findall("maintainer"):
+            e.text = username
+            e.attrib['email']=useremail
+        for e in self.manifest.findall("name"):
+            e.text = pkgname
+
+        self.write()
+
+    def write(self):
+        self.manifest.write(self.path)
+
+    def add_depend(self, name):
+        tags = [c.tag for c in self.manifest.getroot()._children]
+        try:
+            index = tags.index("export")
+        except ValueError:
+            try:
+                index = [i for i, x in enumerate(tags) if x == "depend"][-1] + 1
+            except IndexError:
+                index = -1
+        existing_depends = [e.text for e in self.manifest.findall("depend")]
+        if name not in existing_depends:
+            element = ET._Element("depend")
+            element.text = name
+            element.tail = "\n  "
+            self.manifest.getroot().insert(index, element)
+
+    def add(self, tag, value, attributes=None, index=0):
+        element = ET._Element(tag)
+        element.text = value
+        if attributes is not None:
+            element.attrib = attributes
+        element.tail = "\n  "
+        self.manifest.getroot().insert(index, element)
+
 
 # TODO use python templates?
 def create_files(pkg_name, pkg_type, ros):
-    # Create files and replace with user info
-    user = get_gituserinfo()
     # Readme and test file
     shutil.copyfile(self_dir + "/templates/README.md", "README.md")
     shutil.copyfile(self_dir + "/templates/test.cpp", "./test/test_" + pkg_name + ".cpp")
-
     # Package.xml
+    user=get_gituserinfo()
+    manifest = Manifest("package.xml")
+    manifest.create_from_template(
+        pkg_name, username=user['name'].decode("utf8"), useremail=user['email'].decode("utf8"))
     if ros:
-        shutil.copyfile(self_dir + "/templates/package_ros.xml", "./package.xml")
-    else:
-        shutil.copyfile(self_dir + "/templates/package.xml", "./package.xml")
-
-    subprocess.call("sed -i " +
-                    "-e 's/\${PACKAGE_NAME}/" + pkg_name + "/g' " +
-                    "-e 's/\${CMAKE_PACKAGE_NAME}/" + pkg_name.upper() + "/g' " +
-                    "-e 's/\${USER_NAME}/" + user['name'].decode("utf8") + "/g' " +
-                    "-e 's/\${USER_EMAIL}/" + user['email'].decode("utf8") + "/g' " +
-                    "package.xml", shell=True)
+        manifest.add("build_depend","rosparam_handler", index=8)
+        manifest.add("build_depend","message_generation", index=9)
+        manifest.add("exec_depend","message_runtime", index=10)
+        manifest.add("build_depend","roscpp", index=12)
+        manifest.add("depend","roslib", index=13)
+        manifest.add("depend","nodelet", index=14)
+    manifest.write()
 
     create_cmakelists(pkg_name, pkg_type, ros, self_dir)
 

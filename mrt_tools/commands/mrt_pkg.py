@@ -1,4 +1,4 @@
-from mrt_tools.Package import create_files, create_directories
+from mrt_tools.Package import create_files, create_directories, Manifest
 from mrt_tools.Workspace import Workspace
 from mrt_tools.Digraph import Digraph
 from mrt_tools.utilities import *
@@ -363,46 +363,20 @@ def create_executable(ws, node_name, tf, diagnostics):
     os.chmod(new_files[-1], 509)  # entspricht 775 (octal)
 
     # Add entries to package.xml
-    class FullParser(ET.XMLTreeBuilder):
-        def __init__(self):
-            ET.XMLTreeBuilder.__init__(self)
-            self._parser.CommentHandler = self.handle_comments
-
-        def handle_comments(self, data):
-            self._target.start(ET.Comment, {})
-            self._target.data(data)
-            self._target.end(ET.Comment)
-
-    manifest = ET.parse(os.path.join(ws.src, pkg_name, "package.xml"), parser=FullParser())
-
-    def add_depend(name):
-        tags = [c.tag for c in manifest.getroot()._children]
-        try:
-            index = tags.index("export")
-        except ValueError:
-            try:
-                index = [i for i, x in enumerate(tags) if x == "depend"][-1] + 1
-            except IndexError:
-                index = -1
-        existing_depends = [e.text for e in manifest.findall("depend")]
-        if name not in existing_depends:
-            element = ET._Element("depend")
-            element.text = name
-            element.tail = "\n  "
-            manifest.getroot().insert(index, element)
-
-    add_depend("utils_ros")
-    add_depend("dynamic_reconfigure")
+    manifest = Manifest(os.path.join(ws.src, pkg_name, "package.xml"))
+    manifest.add_depend("utils_ros")
+    manifest.add_depend("dynamic_reconfigure")
+    manifest.add_depend("rosparam_handler")
     if tf:
-        add_depend("tf2_ros")
+        manifest.add_depend("tf2_ros")
     if diagnostics:
-        add_depend("diagnostic_updater")
+        manifest.add_depend("diagnostic_updater")
 
     # Check whether plugins are exported already
-    if not any(["nodelet_plugins.xml" in el.attrib["plugin"] for el in manifest.find("export").getchildren() if
+    if not any(["nodelet_plugins.xml" in el.attrib["plugin"] for el in manifest.manifest.find("export").getchildren() if
                 el.attrib.has_key("plugin")]):
-        manifest.find("export").insert(-1, ET._Element("nodelet", attrib={'plugin': '${prefix}/nodelet_plugins.xml'}))
-    manifest.write(os.path.join(ws.src, pkg_name, "package.xml"))
+        manifest.manifest.find("export").insert(-1, ET._Element("nodelet", attrib={'plugin': '${prefix}/nodelet_plugins.xml'}))
+    manifest.write()
 
     # Test CMakeList for newest version
     if click.confirm("\nUpdate CMakelist now?"):

@@ -49,7 +49,7 @@ default_settings = {
         'BASE_YAML_HASH_FILE': os.path.join(CONFIG_DIR, "base_yaml_hash"),
     },
     'ROS': {
-        'NamingRegexPattern': "\b[a-zA-Z][a-zA-Z_0-9]+",
+        'NamingRegexPattern': "^[a-zA-Z][a-zA-Z_0-9]+",
     },
     'Other': {
         'ALLOW_ROOT': False,

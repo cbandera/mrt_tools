@@ -122,7 +122,7 @@ def update_cmakelists(package, this):
     new_cmakelists = git.server.getrawfile(mrt_build_repo['id'], "master", 'mrt_tools/templates/CMakeLists.txt')
     for line in new_cmakelists.splitlines():
         if line.startswith("#pkg_version="):
-            current_version = line[:-1]
+            current_version = line
             break
     if not current_version:
         eprint("current pkg_version could not be found.")

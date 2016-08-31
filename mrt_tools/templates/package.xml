@@ -1,13 +1,12 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>${PACKAGE_NAME}</name>
+  <name>${pkgname}</name>
   <version>0.0.0</version>
   <description>ToDo: Edit package description</description>
 
   <license>GPLv3</license>
-  <maintainer email="${USER_EMAIL}">${USER_NAME}</maintainer>
-  <author email="${USER_EMAIL}">${USER_NAME}</author>
-  <url type="repository">${PACKAGE_REPOSITORY_URL}</url>
+  <maintainer email="${usermail}">${username}</maintainer>
+  <author email="${usermail}">${username}</author>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>mrt_cmake_modules</build_depend>
@@ -28,7 +27,7 @@
   -->
   <!-- 
     Example:
-    <depend>mrt_opencv</depend> 
+    <depend>opencv</depend>
   -->
   
   <export>

@@ -305,5 +305,15 @@ def which(program):
     return None
 
 
+class FullParser(ET.XMLTreeBuilder):
+    def __init__(self):
+        ET.XMLTreeBuilder.__init__(self)
+        self._parser.CommentHandler = self.handle_comments
+
+    def handle_comments(self, data):
+        self._target.start(ET.Comment, {})
+        self._target.data(data)
+        self._target.end(ET.Comment)
+
 self_dir = get_script_root()
 cache_repos()
