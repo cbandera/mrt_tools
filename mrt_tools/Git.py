@@ -47,8 +47,9 @@ def set_gituserinfo(name=None, email=None, credential_helper=None):
 
 
 def test_git_credentials():
-    # Test whether git credentials are still stored:
-    if user_settings['Gitlab']['CACHE_GIT_CREDENTIALS_FOR_HTTPS_REPOS'] \
+    # Test whether gitlab url is given and git credentials are still stored:
+    if user_settings['Gitlab']['HOST_URL'] and \
+            user_settings['Gitlab']['CACHE_GIT_CREDENTIALS_FOR_HTTPS_REPOS'] \
             and not os.path.exists(os.path.expanduser("~/.git-credential-cache/socket")):
         username, password = cm.credentialManager.get_credentials()
         cm.set_git_credentials(username, password)

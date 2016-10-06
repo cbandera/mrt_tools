@@ -20,6 +20,8 @@ class Gitlab(object):
         self.server = None
         self.ssh_key = None
 
+        if not self.host:
+            return
         if quiet:
             self.connect(quiet=True)
         else:

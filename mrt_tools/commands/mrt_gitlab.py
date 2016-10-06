@@ -124,7 +124,7 @@ def add_user(git):
     pkg_name = repo["name"]
     gl_repo = git.find_repo(pkg_name)  # Gives error string
     ws.add(pkg_name, gl_repo[git.get_url_string()])
-    ws.resolve_dependencies(git=git)
+    ws.resolve_dependencies(gitlab=git)
 
     # Read in dependencies
     ws.load()

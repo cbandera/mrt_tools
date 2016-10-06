@@ -66,7 +66,7 @@ def add(ws, pkg_names):
         url = repo[git.get_url_string()]
         ws.add(pkg_name, url)
 
-    ws.resolve_dependencies(git=git)
+    ws.resolve_dependencies(gitlab=git)
 
 
 @main.command(short_help="Deletes package from workspace.",
@@ -364,9 +364,7 @@ def create_executable(ws, node_name, tf, diagnostics):
 
     # Add entries to package.xml
     manifest = Manifest(os.path.join(ws.src, pkg_name, "package.xml"))
-    manifest.add_depend("utils_ros")
     manifest.add_depend("dynamic_reconfigure")
-    manifest.add_depend("rosparam_handler")
     if tf:
         manifest.add_depend("tf2_ros")
     if diagnostics:

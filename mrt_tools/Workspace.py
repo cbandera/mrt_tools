@@ -1,3 +1,4 @@
+from mrt_tools.settings import user_settings
 from mrt_tools.utilities import changed_base_yaml, update_apt_and_ros_packages, self_dir, is_ros_sourced, sprint, \
     eprint, wprint, echo
 from wstool import multiproject_cli, config_yaml, multiproject_cmd, config as wstool_config
@@ -296,7 +297,7 @@ class Workspace(object):
         return deps
 
     # TODO have a look at this function
-    def resolve_dependencies(self, git=None, default_yes=None):
+    def resolve_dependencies(self, gitlab=None, default_yes=None):
         # TODO maybe use rosdep2 package directly
         echo("Resolving dependencies...")
         # Test whether ros is sourced
@@ -306,9 +307,6 @@ class Workspace(object):
         if changed_base_yaml():
             sprint("Base YAML file changed, running 'rosdep update'.")
             subprocess.call("rosdep update", shell=True)
-
-        if not git:
-            git = Gitlab()
 
         regex_rosdep_resolve = re.compile("ERROR\[([^\]]*)\]: Cannot locate rosdep definition for \[([^\]]*)\]")
 
@@ -332,21 +330,30 @@ class Workspace(object):
             gitlab_packages = []
             for missing_package, package_dep_specified in missing_packages.items():
                 # Search for package in gitlab
-                repo = git.find_repo(missing_package)
-                if repo:
-                    url = repo[git.get_url_string()]
-                    self.add(missing_package, url, update=True)
-                    gitlab_packages.append(missing_package)
+                if not gitlab:
+                    gitlab = Gitlab()
+                if gitlab.host:
+                    repo = gitlab.find_repo(missing_package)
+                    if repo:
+                        url = repo[gitlab.get_url_string()]
+                        self.add(missing_package, url, update=True)
+                        gitlab_packages.append(missing_package)
+                        continue
                 else:
-                    # no Gitlab project found
-                    if not self.updated_apt:
-                        # first not found package. Update apt-get and ros.
-                        sprint("Updating mrt apt-get and rosdep and resolve again. This might take a while ...")
-                        update_apt_and_ros_packages()
-                        self.updated_apt = True
-                        break
-                    else:
-                        eprint("Package {0} (requested from: {1}) could not be found.".format(missing_package,
+                    wprint("Skipping Gitlab, as URL is not configured!")
+
+                # no Gitlab project found, check external links
+                # TODO check external links
+
+                # Check Apt-Get
+                if not self.updated_apt:
+                    # first not found package. Update apt-get and ros.
+                    sprint("Updating mrt apt-get and rosdep and resolve again. This might take a while ...")
+                    update_apt_and_ros_packages()
+                    self.updated_apt = True
+                    break  # Will start again
+                else:
+                    eprint("Package {0} (requested from: {1}) could not be found.".format(missing_package,
                                                                                               package_dep_specified))
             # Load new gitlab packages
             self.write()
