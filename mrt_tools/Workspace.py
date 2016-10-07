@@ -343,9 +343,16 @@ class Workspace(object):
                     wprint("Skipping Gitlab, as URL is not configured!")
 
                 # no Gitlab project found, check external links
-                # TODO check external links
+                try:
+                    repo_dict = yaml.load(open(user_settings["Dependencies"]["EXTERNAL_REPOS_FILE"]))
+                    if isinstance(repo_dict,dict) and missing_package in repo_dict.keys():
+                        url = repo_dict[missing_package]
+                        self.add(missing_package, url, update=True)
+                        continue
+                except (IOError, AttributeError):
+                    pass
 
-                # Check Apt-Get
+                # Still not found, check Apt-Get
                 if not self.updated_apt:
                     # first not found package. Update apt-get and ros.
                     sprint("Updating mrt apt-get and rosdep and resolve again. This might take a while ...")
