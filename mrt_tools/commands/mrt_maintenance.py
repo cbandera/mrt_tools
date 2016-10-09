@@ -117,9 +117,7 @@ def update_cmakelists(package, this):
 
     # download newest version:
     echo("Downloading newest template from gitlab")
-    git = Gitlab()
-    mrt_build_repo = git.find_repo("mrt_build")
-    new_cmakelists = git.server.getrawfile(mrt_build_repo['id'], "master", 'mrt_tools/templates/CMakeLists.txt')
+    new_cmakelists = urllib2.urlopen("https://raw.githubusercontent.com/cbandera/mrt_tools/master/mrt_tools/templates/CMakeLists.txt").read()
     for line in new_cmakelists.splitlines():
         if line.startswith("#pkg_version="):
             current_version = line
