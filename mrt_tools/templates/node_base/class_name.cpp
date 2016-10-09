@@ -1,5 +1,5 @@
 #include "${class_name}.hpp"
-//#include <utils_ros/ros_console.hpp>
+#include "rosparam_handler/utilities.hpp"
 
 namespace ${pkgname} {
 
@@ -11,7 +11,7 @@ ${ClassName}::${ClassName}(ros::NodeHandle node_handle, ros::NodeHandle private_
     /**
      * Initialization
      */
-    //utils_ros::setLoggerLevel(private_node_handle);
+    rosparam_handler::setLoggerLevel(private_node_handle);
     params_.fromParamServer();
     setupDiagnostics(); //@diagnostics@
 
@@ -39,7 +39,7 @@ ${ClassName}::${ClassName}(ros::NodeHandle node_handle, ros::NodeHandle private_
     dummySub_ = private_node_handle.subscribe(params_.subscriber_msg_name, params_.msg_queue_size,
                                                &${ClassName}::subCallback, this, ros::TransportHints().tcpNoDelay());
 
-    //utils_ros::showNodeInfo();
+    rosparam_handler::showNodeInfo();
 }
 
 /*
