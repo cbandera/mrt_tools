@@ -8,6 +8,22 @@ sudo apt-get install virtualenvwrapper libffi-dev libkrb5-dev libyaml-dev
 source /usr/share/virtualenvwrapper/virtualenvwrapper.sh # Can be put into bashrc
 ```
 
+For automatic code formatting, clang-format-3.8 is needed. To install it, follow the instructions on this site: http://apt.llvm.org/  
+e.g. for Ubuntu 16.04:
+```bash
+echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial main
+deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial main
+# 3.8
+deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.8 main
+deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.8 main
+# 3.9
+deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main
+deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main" | sudo tee /etc/apt/sources.list.d/llvm.list
+wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
+sudo apt update
+sudo apt install clang-format-3.8
+```
+
 ## Creating the virtualenv and installation
 First, create a new virtual environment
 ```bash
