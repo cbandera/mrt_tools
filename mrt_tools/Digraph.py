@@ -1,3 +1,4 @@
+from mrt_tools.utilities import echo
 import subprocess
 import pydot
 import os
