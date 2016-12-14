@@ -168,9 +168,10 @@ def deps(ws):
                    "the resulting images are written to 'ws/pics/'")
 @click.argument("pkg_name", type=click.STRING, required=False, autocompletion=local_pkg_names)
 @click.option("--this", is_flag=True, help="Use the package containing the current directory.")
-@click.option("--repos-only", is_flag=True)
+@click.option("-y", "yes", is_flag=True, help="Answer all questions with yes.")
+@click.option("--repos-only", is_flag=True, help="Do not draw installed libaries. This improves speed.")
 @click.pass_obj
-def draw(ws, pkg_name, this, repos_only):
+def draw(ws, pkg_name, this, yes, repos_only):
     """ Visualize dependencies of catkin packages."""
     pkg_list = ws.get_catkin_package_names()
 
@@ -178,13 +179,15 @@ def draw(ws, pkg_name, this, repos_only):
         pkg_name = figure_out_pkg_name(ws, pkg_name, this)
         pkg_list = [pkg_name]
     else:
-        if click.confirm("Create dependency graph for every package?"):
-            for pkg_name in ws.get_catkin_package_names():
-                echo("Creating graph for {}...".format(pkg_name))
+        if yes or click.confirm("Create dependency graph for every package?"):
+            for i, pkg_name in enumerate(pkg_list):
+                if "/" in pkg_name:
+                    pkg_name = pkg_name[pkg_name.rfind("/")+1:]
+                echo("[{}/{}] Creating graph for {}.".format(i, len(pkg_list), pkg_name))
                 deps = ws.get_dependencies(pkg_name, deep=True)
                 graph = Digraph(deps, repos_only)
                 graph.plot(pkg_name, show=False)
-        if click.confirm("Create complete dependency graph for workspace?", abort=True):
+        if yes or click.confirm("Create complete dependency graph for workspace?", abort=True):
             pkg_name = os.path.basename(ws.root)
 
     deps = dict()

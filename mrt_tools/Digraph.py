@@ -80,7 +80,7 @@ class Digraph(object):
         if not os.path.exists("pics"):
             os.mkdir("pics")
         filename = os.path.join(os.getcwd(), "pics/deps_{0}.png".format(pkg_name))
+        echo("Writing image to: " + os.getcwd() + "/" + filename)
         self.graph.write_png(filename)
         if show:
             subprocess.call(["xdg-open", filename])
-        echo("Image written to: " + os.getcwd() + "/" + filename)
